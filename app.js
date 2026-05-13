@@ -252,10 +252,70 @@
     ]);
   }
 
+  /* ---------- Phase 3 — Comment ca marche ---------- */
+  function howCard(opts) {
+    return el('article', {
+      class: 'how-card',
+      dataset: { step: opts.step }
+    }, [
+      el('div', { class: 'how-card__bg-num mono', 'aria-hidden': 'true' }, opts.step),
+      el('div', { class: 'how-card__content' }, [
+        el('span', { class: 'overline mono how-card__tag' }, '· ' + opts.step + ' · ' + opts.title + ' ·'),
+        el('div', { class: 'how-card__icon' }, [
+          el('i', { 'data-lucide': opts.icon })
+        ]),
+        el('h3', { class: 'how-card__title' }, opts.title),
+        el('p', { class: 'how-card__desc' }, opts.desc),
+        el('ul', { class: 'how-card__bullets mono' },
+          opts.bullets.map(function (b) { return el('li', null, '· ' + b); })
+        )
+      ])
+    ]);
+  }
+
+  function howSection() {
+    return el('section', { class: 'how' }, [
+      el('div', { class: 'how__container' }, [
+        el('header', { class: 'how__header' }, [
+          el('span', { class: 'overline' }, '· COMMENT ÇA MARCHE ·'),
+          el('h2', { class: 'how__title' }, [
+            '3 étapes pour reprendre ',
+            el('span', { class: 'how__title-lime' }, 'le contrôle'),
+            ' de ce que tu consommes.'
+          ])
+        ]),
+        el('div', { class: 'how__steps' }, [
+          howCard({
+            step: '01',
+            title: 'Scan',
+            icon: 'scan-line',
+            desc: "Photographie l'étiquette ou scanne le code-barres. Skynova lit, décortique, extrait chaque ingrédient et chaque dosage en moins de 3 secondes.",
+            bullets: ['Code-barres EAN-13', 'Photo étiquette', 'Recherche manuelle']
+          }),
+          howCard({
+            step: '02',
+            title: 'Décode',
+            icon: 'gauge',
+            desc: "On calcule un score d'efficacité et un score prix en croisant dosage, pureté, certifications et coût au gramme de principe actif. Sans compromis.",
+            bullets: ['Dosage vs RDA', 'Pureté & additifs', 'Prix au mg actif']
+          }),
+          howCard({
+            step: '03',
+            title: 'Switch',
+            icon: 'refresh-cw',
+            desc: "3 alternatives recommandées : mieux dosées, plus pures ou moins chères. Économise jusqu'à 40 % à efficacité équivalente.",
+            bullets: ['Top efficacité', 'Meilleur €/mg', 'Mieux noté communauté']
+          })
+        ])
+      ])
+    ]);
+  }
+
   function renderHome() {
     const frag = document.createDocumentFragment();
     frag.appendChild(heroSection());
     frag.appendChild(problemSection());
+    frag.appendChild(howSection());
     return frag;
   }
 

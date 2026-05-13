@@ -1022,3 +1022,196 @@ ul { list-style: none; }
   .stat-card__num-affix { font-size: 28px; }
   .stat-card__label { font-size: 15px; }
 }
+
+/* =========================================================
+   PHASE 3 — COMMENT CA MARCHE
+   ========================================================= */
+
+.how {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 56px 20px 72px;
+  border-top: 1px solid var(--ink-line);
+}
+
+.how__container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.how__header {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 920px;
+}
+
+.how__title {
+  font-family: var(--font-sans);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+  color: var(--bone-pure);
+}
+.how__title-lime {
+  color: var(--lime-electric);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.how__steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .how { padding: 72px 32px 88px; }
+  .how__container { gap: 40px; }
+  .how__title { font-size: 32px; line-height: 1.15; }
+  .how__steps { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+
+@media (min-width: 1024px) {
+  .how { padding: 96px 40px 112px; }
+  .how__container { gap: 48px; }
+  .how__title { font-size: 40px; letter-spacing: -0.03em; line-height: 1.1; }
+  .how__steps { gap: 20px; }
+}
+
+/* ---------- How card ---------- */
+.how-card {
+  position: relative;
+  background: var(--ink-deep);
+  border: 1px solid var(--ink-soft);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+/* Background giant number */
+.how-card__bg-num {
+  position: absolute;
+  top: -22px;
+  right: -10px;
+  font-family: var(--font-mono);
+  font-size: 180px;
+  font-weight: 500;
+  line-height: 0.9;
+  color: var(--ink-mid);
+  letter-spacing: -0.06em;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  transition: color 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.how-card__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.how-card__tag {
+  color: var(--bone-faded);
+  align-self: flex-start;
+}
+
+.how-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  background: var(--ink-mid);
+  border: 1px solid var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bone-soft);
+  transition:
+    background-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.how-card__icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.8;
+}
+
+.how-card__title {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--bone-pure);
+  margin-top: 2px;
+}
+
+.how-card__desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--bone-soft);
+  flex: 1;
+}
+
+.how-card__bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 1px dashed var(--ink-soft);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-faded);
+}
+
+/* Hover-group : dim the siblings, scale the focused */
+@media (hover: hover) {
+  .how__steps:hover .how-card {
+    opacity: 0.4;
+  }
+  .how__steps:hover .how-card:hover {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.015);
+    border-color: rgba(212, 255, 58, 0.35);
+    background: var(--ink-mid);
+  }
+  .how__steps:hover .how-card:hover .how-card__bg-num {
+    color: var(--ink-soft);
+  }
+  .how__steps:hover .how-card:hover .how-card__icon {
+    background: var(--lime-electric);
+    color: var(--ink-pure);
+    border-color: var(--lime-electric);
+    transform: rotate(-3deg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .how-card { padding: 28px; min-height: 360px; }
+  .how-card__title { font-size: 24px; }
+  .how-card__desc { font-size: 15px; }
+  .how-card__bg-num { font-size: 220px; top: -28px; right: -16px; }
+  .how-card__icon { width: 48px; height: 48px; }
+  .how-card__icon svg { width: 22px; height: 22px; }
+}
