@@ -2202,15 +2202,1043 @@
     return appLayout('scan', content);
   }
 
-  /* ---------- /search and /product : Phase 9 stubs wrapped in app shell ---------- */
-  function renderSearchStub() {
-    const content = stub('Recherche', 'Exploration BDD avec filtres avancés — Phase 9.');
-    return appLayout('search', content);
+  /* =========================================================
+     Phase 9 — Recherche + Fiche produit
+     ========================================================= */
+
+  /* ---------- Dataset produits (12 produits seedés client-side) ---------- */
+  const PRODUCTS = [
+    {
+      id: 'whe', mark: 'WHE', brand: 'Nutripure', name: 'Whey Native Isolat', category: 'sport',
+      price: 39.90, pricePerDose: '1,11 € / dose', servings: 36, activeDose: '25 g',
+      purity: 90, origin: 'France', certifications: ['ISO 22000', 'GMP', 'Sans gluten'], additives: [],
+      badges: [{ label: 'Sport', tone: 'lime' }, { label: 'Performance', tone: '' }],
+      description: "Whey native isolat obtenue par micro-filtration à froid à partir de lait de vache collecté en Normandie. 25 g de protéines par dose, 5,4 g de BCAA, 2,8 g de leucine.",
+      scoreEfficacy: 92, scorePrice: 76,
+      breakdown: { dosage: 38, purity: 27, certif: 17, trace: 10 },
+      whyScore: [
+        "25 g de protéines par dose, soit la dose efficace pour stimuler la synthèse musculaire (≥ 20 g par prise)",
+        "Pureté 90 % : pas d'agent de remplissage, pas de protéines de soja en mélange caché",
+        "Origine France traçable : lait collecté chez 12 éleveurs de Normandie identifiés",
+        "Triple certification : ISO 22000, GMP pharmaceutique, Sans gluten certifié AFDIAG",
+        "Zéro additif controversé : pas de dioxyde de titane, pas de polysorbate 80"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Concentré de protéines de lactosérum filtré à froid (90 %)', dose: '27,8 g' },
+          { name: 'Arôme naturel vanille de Madagascar', dose: 'qsp' },
+          { name: 'Émulsifiant : lécithine de tournesol', dose: '0,5 g' },
+          { name: 'Édulcorant : stévia rebaudioside A 97 %', dose: '0,3 g' }
+        ],
+        perDose: [
+          { label: 'Protéines', value: '25 g' },
+          { label: 'BCAA', value: '5,4 g' },
+          { label: 'Leucine', value: '2,8 g' },
+          { label: 'Calories', value: '104 kcal' },
+          { label: 'Glucides', value: '1,2 g' },
+          { label: 'Lipides', value: '0,3 g' }
+        ]
+      },
+      reviews: [
+        { author: 'Thomas B.', rating: 5, weeks: 12, verified: true, helpful: 24,
+          comment: "Excellent rapport qualité-prix. Dilution parfaite, goût propre, aucun problème digestif. J'avais une whey à 49 €, je gagne 10 € sans perdre en efficacité." },
+        { author: 'Léa M.', rating: 4, weeks: 8, verified: true, helpful: 18,
+          comment: "Top en prise de masse, petit goût vanille un peu sucré à mon goût mais ça reste léger. Le score 92 est mérité." },
+        { author: 'Antoine K.', rating: 5, weeks: 20, verified: false, helpful: 12,
+          comment: "Cinquième boîte. La transparence sur l'origine Normandie change tout, j'aurais aimé ça il y a 10 ans." }
+      ]
+    },
+    {
+      id: 'cre', mark: 'CRE', brand: 'Nutrimuscle', name: 'Créatine Creapure', category: 'sport',
+      price: 29.90, pricePerDose: '0,30 € / dose', servings: 100, activeDose: '5 g',
+      purity: 99.95, origin: 'Allemagne', certifications: ['Creapure', 'Cologne List', 'GMP'], additives: [],
+      badges: [{ label: 'Sport', tone: 'lime' }, { label: 'Force', tone: '' }],
+      description: "Créatine monohydrate Creapure, l'unique forme dont l'efficacité est cliniquement prouvée. Pureté 99,95 % garantie par Alzchem en Allemagne.",
+      scoreEfficacy: 95, scorePrice: 92,
+      breakdown: { dosage: 40, purity: 30, certif: 17, trace: 8 },
+      whyScore: [
+        "5 g par dose, la dose de charge et d'entretien validée par > 500 études cliniques",
+        "Pureté 99,95 % Creapure : la norme industrielle, garantie par certificat d'analyse",
+        "Cologne List (zéro contamination anabolisante) + GMP pharmaceutique",
+        "Origine Allemagne, fabricant unique Alzchem traçable au lot",
+        "Aucune valeur ajoutée des autres formes (HCl, malate, ester) à ce jour"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Créatine monohydrate Creapure®', dose: '5 g' }
+        ],
+        perDose: [
+          { label: 'Créatine pure', value: '5 g' },
+          { label: 'Pureté', value: '99,95 %' },
+          { label: 'Calories', value: '0 kcal' },
+          { label: 'Forme', value: 'Monohydrate' }
+        ]
+      },
+      reviews: [
+        { author: 'Maxime R.', rating: 5, weeks: 16, verified: true, helpful: 31,
+          comment: "Le pot le moins cher au gramme de créatine pure sur le marché français. Pas d'arôme, pas d'édulcorant. Que de la créatine, rien d'autre." },
+        { author: 'Sarah P.', rating: 5, weeks: 6, verified: true, helpful: 14,
+          comment: "Aucun effet secondaire (ballonnements zéro contrairement à une autre marque). Je suis passée à 4 g/jour par confort et ça marche pareil." },
+        { author: 'Julien T.', rating: 4, weeks: 24, verified: false, helpful: 9,
+          comment: "Goût neutre légèrement amer. Je mixe avec ma whey, aucun problème. Score Skynova justifié." }
+      ]
+    },
+    {
+      id: 'mag', mark: 'MAG', brand: 'Nutripure', name: 'Magnésium Bisglycinate', category: 'vitality',
+      price: 22.90, pricePerDose: '0,38 € / dose', servings: 60, activeDose: '300 mg',
+      purity: 88, origin: 'France', certifications: ['Albion TRAACS', 'ISO 22000', 'AB'], additives: [],
+      badges: [{ label: 'Vitalité', tone: 'lime' }, { label: 'Stress', tone: '' }],
+      description: "Magnésium bisglycinate Albion TRAACS, la forme chélatée la mieux absorbée. 300 mg de magnésium élément par dose, sans oxyde ni stéarate.",
+      scoreEfficacy: 94, scorePrice: 84,
+      breakdown: { dosage: 40, purity: 27, certif: 18, trace: 9 },
+      whyScore: [
+        "300 mg de magnésium élément par dose, couvre 80 % des AJR d'un adulte",
+        "Forme bisglycinate Albion TRAACS : assimilation 3 à 5× supérieure à l'oxyde",
+        "Triple certif : Albion TRAACS authentifié, ISO 22000, AB (bio agriculture)",
+        "Pas de stéarate de magnésium (utilisé comme excipient bon marché ailleurs)",
+        "Conditionnement gélule pullulane (origine fungique, sans gélatine animale)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Magnésium bisglycinate Albion TRAACS', dose: '1875 mg' },
+          { name: 'Gélule pullulane (fungique)', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Magnésium élément', value: '300 mg' },
+          { label: 'Forme', value: 'Bisglycinate' },
+          { label: 'Source', value: 'Albion TRAACS' },
+          { label: 'AJR couvert', value: '80 %' }
+        ]
+      },
+      reviews: [
+        { author: 'Camille L.', rating: 5, weeks: 10, verified: true, helpful: 28,
+          comment: "Différence nette sur le sommeil après 2 semaines. Aucun effet laxatif contrairement à mon ancien magnésium marin." },
+        { author: 'Paul D.', rating: 5, weeks: 14, verified: true, helpful: 19,
+          comment: "Pris en cure d'attaque 600 mg/jour pendant 3 semaines, puis 300 mg en entretien. Crampes nocturnes finies, j'ai renouvelé." },
+        { author: 'Élise V.', rating: 4, weeks: 7, verified: false, helpful: 8,
+          comment: "Très efficace mais 2 gélules par jour c'est un peu lourd. À part ça, c'est top." }
+      ]
+    },
+    {
+      id: 'vtd', mark: 'VTD', brand: 'Solgar', name: 'Vitamine D3 1000 UI', category: 'vitality',
+      price: 16.50, pricePerDose: '0,18 € / dose', servings: 90, activeDose: '1000 UI',
+      purity: 75, origin: 'États-Unis', certifications: ['Kosher'], additives: ['Stéarate de magnésium'],
+      badges: [{ label: 'Vitalité', tone: 'amber' }],
+      description: "Vitamine D3 cholécalciférol issue de lanoline. 1000 UI par dose, en dessous des recommandations européennes modernes (2000 UI préconisés en hiver).",
+      scoreEfficacy: 71, scorePrice: 80,
+      breakdown: { dosage: 22, purity: 22, certif: 5, trace: 4 },
+      whyScore: [
+        "1000 UI par dose : couvre les AJR ANSES mais en dessous des protocoles européens hiver (2000-4000 UI)",
+        "Forme D3 cholécalciférol (mieux que D2) issue de lanoline animale",
+        "Présence de stéarate de magnésium comme agent d'écoulement (pénalité pureté)",
+        "Aucune certification GMP ou Bio, juste Kosher",
+        "Origine États-Unis non détaillée (lanoline source non précisée)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Cholécalciférol (vitamine D3)', dose: '1000 UI (25 µg)' },
+          { name: 'Huile de carthame', dose: '180 mg' },
+          { name: 'Stéarate de magnésium végétal', dose: '12 mg' },
+          { name: 'Capsule : gélatine bovine', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Vitamine D3', value: '1000 UI' },
+          { label: 'AJR couvert', value: '500 %' },
+          { label: 'Forme', value: 'Cholécalciférol' },
+          { label: 'Source', value: 'Lanoline' }
+        ]
+      },
+      reviews: [
+        { author: 'Marie F.', rating: 4, weeks: 24, verified: true, helpful: 15,
+          comment: "Cure d'hiver classique, mon médecin recommande Solgar mais je vais regarder une marque française mieux notée la prochaine fois." },
+        { author: 'Bertrand M.', rating: 3, weeks: 12, verified: false, helpful: 6,
+          comment: "1000 UI c'est très peu en réalité. Je double la dose en hiver. Score Skynova mérité, je vais switcher." },
+        { author: 'Aïcha B.', rating: 4, weeks: 8, verified: true, helpful: 4,
+          comment: "Bon prix, efficace, mais la gélatine bovine ne convient pas à tout le monde. Pour le reste rien à dire." }
+      ]
+    },
+    {
+      id: 'spi', mark: 'SPI', brand: 'Ballot-Flurin', name: 'Spiruline Bio FR', category: 'vitality',
+      price: 24.50, pricePerDose: '0,82 € / dose', servings: 30, activeDose: '3 g',
+      purity: 95, origin: 'France', certifications: ['AB', 'Demeter', 'Friend of the Sea'], additives: [],
+      badges: [{ label: 'Vitalité', tone: 'lime' }],
+      description: "Spiruline française cultivée en bassins ouverts dans le Sud-Ouest. Séchée à basse température (< 40 °C) pour préserver la phycocyanine.",
+      scoreEfficacy: 88, scorePrice: 62,
+      breakdown: { dosage: 32, purity: 28, certif: 18, trace: 10 },
+      whyScore: [
+        "3 g par dose, dose minimale efficace recommandée par la Fédération des Spiruliniers de France",
+        "Pureté 95 % : phycocyanine garantie ≥ 18 %, séchage basse température",
+        "Triple certif : AB, Demeter (biodynamie), Friend of the Sea",
+        "Origine France traçable au bassin (Sud-Ouest), production artisanale",
+        "Pénalité prix : 0,82 € / dose contre 0,30 € pour spiruline import certifiée"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Spiruline (Arthrospira platensis) bio française', dose: '3 g' }
+        ],
+        perDose: [
+          { label: 'Spiruline', value: '3 g' },
+          { label: 'Phycocyanine', value: '≥ 18 %' },
+          { label: 'Protéines', value: '1,8 g' },
+          { label: 'Fer', value: '1,8 mg' }
+        ]
+      },
+      reviews: [
+        { author: 'Sophie R.', rating: 5, weeks: 6, verified: true, helpful: 11,
+          comment: "Cher mais la qualité française se sent : pas de goût terreux, dissolution propre. Je ne reviendrai pas à l'import." },
+        { author: 'Lucas A.', rating: 4, weeks: 10, verified: false, helpful: 7,
+          comment: "Top sur la fatigue chronique. Le prix au gramme reste élevé mais score 88 mérité." },
+        { author: 'Inès D.', rating: 5, weeks: 4, verified: true, helpful: 3,
+          comment: "Petits producteurs visibles sur leur site. Démarche cohérente, produit cohérent." }
+      ]
+    },
+    {
+      id: 'ash', mark: 'ASH', brand: 'Nutripure', name: 'Ashwagandha KSM-66', category: 'sleep',
+      price: 27.90, pricePerDose: '0,93 € / dose', servings: 30, activeDose: '600 mg',
+      purity: 92, origin: 'Inde', certifications: ['KSM-66', 'USDA Organic', 'GMP'], additives: [],
+      badges: [{ label: 'Sommeil', tone: 'mercury' }, { label: 'Stress', tone: '' }],
+      description: "Ashwagandha extrait standardisé KSM-66, l'unique extrait avec > 24 études cliniques publiées. Standardisé à 5 % de withanolides.",
+      scoreEfficacy: 92, scorePrice: 70,
+      breakdown: { dosage: 38, purity: 28, certif: 18, trace: 8 },
+      whyScore: [
+        "600 mg par dose, dose moyenne validée par les études cliniques KSM-66",
+        "Standardisation 5 % withanolides certifiée par Ixoreal Biomed (fabricant unique)",
+        "USDA Organic + GMP + KSM-66 trademark = trinité de transparence",
+        "Origine Inde traçable à la ferme (district Madhya Pradesh)",
+        "Score prix moyen : reste 30 % plus cher que les extraits non standardisés"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Extrait de racine d\'ashwagandha KSM-66 (5 % withanolides)', dose: '600 mg' },
+          { name: 'Gélule pullulane (fungique)', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Ashwagandha', value: '600 mg' },
+          { label: 'Withanolides', value: '30 mg (5 %)' },
+          { label: 'Forme', value: 'KSM-66' },
+          { label: 'Source', value: 'Racine pure' }
+        ]
+      },
+      reviews: [
+        { author: 'Jules M.', rating: 5, weeks: 8, verified: true, helpful: 22,
+          comment: "Cure de 8 semaines à 600 mg/soir. Sommeil amélioré dès la 2e semaine, anxiété matinale en baisse nette. Renouvellement direct." },
+        { author: 'Léa P.', rating: 4, weeks: 12, verified: true, helpful: 13,
+          comment: "Efficace mais effet plus lent que la mélatonine. Convient en fond, pas en aigu. Score 92 cohérent." },
+        { author: 'Marc D.', rating: 5, weeks: 6, verified: false, helpful: 5,
+          comment: "La certification KSM-66 fait la différence vs un ashwagandha basique. Confiance dans la marque." }
+      ]
+    },
+    {
+      id: 'mlt', mark: 'MLT', brand: 'Apyforme', name: 'Mélatonine 1,9 mg', category: 'sleep',
+      price: 14.90, pricePerDose: '0,25 € / dose', servings: 60, activeDose: '1,9 mg',
+      purity: 88, origin: 'France', certifications: ['ISO 22000', 'Made in France'], additives: [],
+      badges: [{ label: 'Sommeil', tone: 'mercury' }],
+      description: "Mélatonine de synthèse au dosage légal maximal autorisé en France (1,9 mg). Formulation à libération immédiate, à prendre 30 min avant le coucher.",
+      scoreEfficacy: 84, scorePrice: 88,
+      breakdown: { dosage: 32, purity: 26, certif: 16, trace: 10 },
+      whyScore: [
+        "1,9 mg : dose plafond légale française, validée par l'ANSES pour l'endormissement",
+        "Pureté 88 % : pas d'arôme synthétique, capsule végétale",
+        "Made in France certifié, ISO 22000 sur la chaîne de production",
+        "Score prix excellent : 0,25 € / dose contre 0,40 € moyen catégorie",
+        "Pénalité dosage : 1,9 mg est sous-dosé vs les protocoles internationaux (3-5 mg)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Mélatonine pure', dose: '1,9 mg' },
+          { name: 'Capsule HPMC végétale', dose: 'qsp' },
+          { name: 'Maltodextrine', dose: '180 mg' }
+        ],
+        perDose: [
+          { label: 'Mélatonine', value: '1,9 mg' },
+          { label: 'Forme', value: 'Libération immédiate' },
+          { label: 'Délai d\'action', value: '30 min' },
+          { label: 'AJR', value: 'N/A' }
+        ]
+      },
+      reviews: [
+        { author: 'Nathan F.', rating: 5, weeks: 4, verified: true, helpful: 17,
+          comment: "Efficace dès la première nuit. Rapport qualité-prix imbattable, je prenais une marque pharmacie à 22 €." },
+        { author: 'Camille T.', rating: 4, weeks: 8, verified: true, helpful: 9,
+          comment: "Marche bien pour l'endormissement, mais 1,9 mg ne tient pas la nuit entière pour moi. Le plafond français est trop bas." },
+        { author: 'Antoine L.', rating: 4, weeks: 12, verified: false, helpful: 6,
+          comment: "Fait le job, sans plus. Origine France appréciable. Je vais essayer un mix mélatonine + ashwagandha." }
+      ]
+    },
+    {
+      id: 'prb', mark: 'PRB', brand: 'D-Lab', name: 'Probio Daily 10M', category: 'digestion',
+      price: 34.90, pricePerDose: '1,16 € / dose', servings: 30, activeDose: '10 milliards UFC',
+      purity: 90, origin: 'France', certifications: ['Microbiote-Tested', 'Pharmacopée européenne', 'GMP'], additives: [],
+      badges: [{ label: 'Digestion', tone: 'lime' }, { label: 'Microbiote', tone: '' }],
+      description: "10 milliards d'UFC garantis à péremption, 10 souches scientifiquement validées (Lactobacillus + Bifidobacterium). Capsule gastro-résistante.",
+      scoreEfficacy: 86, scorePrice: 64,
+      breakdown: { dosage: 33, purity: 27, certif: 18, trace: 8 },
+      whyScore: [
+        "10 milliards UFC garantis à péremption (pas seulement à la production)",
+        "10 souches identifiées au niveau espèce + souche (rare dans la catégorie)",
+        "Capsule gastro-résistante DR-Caps : ≥ 80 % des bactéries arrivent vivantes au côlon",
+        "Triple certif : Microbiote-Tested + Pharmacopée européenne + GMP",
+        "Pénalité prix : 1,16 € / dose, presque le double de la médiane catégorie"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Lactobacillus rhamnosus GG', dose: '2 milliards UFC' },
+          { name: 'Lactobacillus acidophilus LA-5', dose: '1,5 milliards UFC' },
+          { name: 'Bifidobacterium lactis BB-12', dose: '1,5 milliards UFC' },
+          { name: '7 autres souches probiotiques', dose: '5 milliards UFC' },
+          { name: 'Capsule DR-Caps gastro-résistante', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'UFC totales', value: '10 milliards' },
+          { label: 'Souches', value: '10' },
+          { label: 'Capsule', value: 'DR-Caps gastro' },
+          { label: 'Conservation', value: 'À température ambiante' }
+        ]
+      },
+      reviews: [
+        { author: 'Hélène G.', rating: 5, weeks: 12, verified: true, helpful: 26,
+          comment: "Cure post-antibiotiques. Transit revenu à la normale en 2 semaines, ballonnements disparus. Cher mais ça marche." },
+        { author: 'Mathieu R.', rating: 4, weeks: 6, verified: true, helpful: 11,
+          comment: "Bon produit mais 35 €/mois c'est cher en routine. J'ai switché vers une alternative à 18 € que Skynova recommande, score équivalent." },
+        { author: 'Sarah V.', rating: 5, weeks: 8, verified: false, helpful: 7,
+          comment: "La transparence sur les souches change tout. Beaucoup de marques cachent ce détail." }
+      ]
+    },
+    {
+      id: 'psy', mark: 'PSY', brand: 'Nutrimea', name: 'Psyllium Blond Bio', category: 'digestion',
+      price: 16.90, pricePerDose: '0,17 € / dose', servings: 100, activeDose: '5 g',
+      purity: 95, origin: 'Inde', certifications: ['AB', 'EU Organic', 'GMP'], additives: [],
+      badges: [{ label: 'Digestion', tone: 'lime' }, { label: 'Fibres', tone: '' }],
+      description: "Psyllium blond bio (Plantago ovata) en téguments. 5 g de fibres solubles par dose. À prendre avec un grand verre d'eau, 30 min avant repas.",
+      scoreEfficacy: 83, scorePrice: 94,
+      breakdown: { dosage: 30, purity: 28, certif: 17, trace: 8 },
+      whyScore: [
+        "5 g par dose, dose efficace validée par l'EFSA pour la régularité du transit",
+        "Pureté 95 % : téguments purs, sans amidon ni excipient",
+        "Triple certif : AB + EU Organic + GMP",
+        "Score prix excellent : 0,17 € / dose, dans le top 10 % catégorie",
+        "Origine Inde non française mais traçable à la coopérative"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Psyllium blond bio (téguments)', dose: '5 g' }
+        ],
+        perDose: [
+          { label: 'Fibres solubles', value: '4,5 g' },
+          { label: 'Fibres insolubles', value: '0,5 g' },
+          { label: 'Calories', value: '8 kcal' },
+          { label: 'Forme', value: 'Poudre' }
+        ]
+      },
+      reviews: [
+        { author: 'Olivier C.', rating: 5, weeks: 20, verified: true, helpful: 19,
+          comment: "Constipation chronique réglée en 1 semaine. Goût neutre, se mélange bien dans un yaourt. Imbattable au prix au gramme." },
+        { author: 'Aurélie M.', rating: 4, weeks: 8, verified: true, helpful: 8,
+          comment: "Très efficace mais attention à bien boire beaucoup d'eau, sinon ça bloque." },
+        { author: 'Pierre B.', rating: 5, weeks: 12, verified: false, helpful: 4,
+          comment: "Bio + prix correct + score 83. Aucun reproche." }
+      ]
+    },
+    {
+      id: 'col', mark: 'COL', brand: 'Apyforme', name: 'Collagène Marin Type I', category: 'beauty',
+      price: 28.90, pricePerDose: '0,96 € / dose', servings: 30, activeDose: '10 g',
+      purity: 94, origin: 'France', certifications: ['Friend of the Sea', 'Naticol', 'ISO 22000'], additives: [],
+      badges: [{ label: 'Beauté', tone: 'lime' }, { label: 'Peau', tone: '' }],
+      description: "Collagène marin Type I hydrolysé Naticol, peptides de bas poids moléculaire (2 kDa). Pêche durable côte atlantique française.",
+      scoreEfficacy: 92, scorePrice: 68,
+      breakdown: { dosage: 36, purity: 28, certif: 18, trace: 10 },
+      whyScore: [
+        "10 g par dose, dose efficace validée par les études cliniques (≥ 5 g/jour minimum)",
+        "Peptides bas poids moléculaire (2 kDa) Naticol : assimilation > 90 %",
+        "Friend of the Sea + Naticol trademark : pêche durable garantie",
+        "Origine France traçable côte atlantique, peaux de poissons issues de filière alimentaire",
+        "Pénalité prix : 0,96 € / dose contre médiane 0,55 € catégorie"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Peptides de collagène marin Type I Naticol', dose: '10 g' }
+        ],
+        perDose: [
+          { label: 'Collagène hydrolysé', value: '10 g' },
+          { label: 'Poids moléculaire', value: '2 kDa' },
+          { label: 'Type', value: 'I' },
+          { label: 'Source', value: 'Peaux de poissons' }
+        ]
+      },
+      reviews: [
+        { author: 'Marion T.', rating: 5, weeks: 12, verified: true, helpful: 23,
+          comment: "Cure de 3 mois. Cheveux plus brillants, ongles plus solides, peau visiblement plus tonique. Cher mais ça vaut le prix." },
+        { author: 'Léa B.', rating: 4, weeks: 8, verified: true, helpful: 10,
+          comment: "Bon goût neutre (à mélanger dans un café), résultats visibles à 6 semaines. Je vais essayer une cure 6 mois." },
+        { author: 'Stéphanie F.', rating: 5, weeks: 16, verified: false, helpful: 6,
+          comment: "Origine France appréciable pour un collagène marin. Confiance totale dans Apyforme." }
+      ]
+    },
+    {
+      id: 'cur', mark: 'CUR', brand: 'Nutripure', name: 'Curcumine + Pipérine', category: 'joints',
+      price: 21.90, pricePerDose: '0,73 € / dose', servings: 30, activeDose: '500 mg',
+      purity: 95, origin: 'Inde', certifications: ['BCM-95', 'GMP', 'Sans gluten'], additives: [],
+      badges: [{ label: 'Articulaire', tone: 'lime' }, { label: 'Inflammation', tone: '' }],
+      description: "Curcumine BCM-95 standardisée à 95 % de curcuminoïdes + pipérine 5 mg pour multiplier la biodisponibilité par 20.",
+      scoreEfficacy: 90, scorePrice: 75,
+      breakdown: { dosage: 36, purity: 28, certif: 16, trace: 10 },
+      whyScore: [
+        "500 mg de curcumine BCM-95 par dose, biodisponibilité 7× supérieure au curcuma standard",
+        "Pipérine 5 mg ajoutée : multiplie l'assimilation par 20 (cf. étude Shoba 1998)",
+        "Pureté 95 % : standardisation curcuminoïdes garantie",
+        "BCM-95 trademark + GMP + Sans gluten",
+        "Sans curcuma indien lambda : la curcumine est l'unique principe actif efficace"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Extrait de curcuma standardisé BCM-95', dose: '500 mg' },
+          { name: 'Pipérine (extrait de poivre noir)', dose: '5 mg' },
+          { name: 'Capsule pullulane', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Curcuminoïdes', value: '475 mg (95 %)' },
+          { label: 'Pipérine', value: '5 mg' },
+          { label: 'Biodisponibilité', value: 'x 20' },
+          { label: 'Forme', value: 'BCM-95' }
+        ]
+      },
+      reviews: [
+        { author: 'Bernard M.', rating: 5, weeks: 16, verified: true, helpful: 21,
+          comment: "Arthrose du genou. Cure de 4 mois, douleur réduite de 60 % au questionnaire WOMAC. La pipérine fait toute la différence." },
+        { author: 'Élise D.', rating: 4, weeks: 6, verified: true, helpful: 9,
+          comment: "Pris contre les douleurs cervicales post-confinement. Effet net après 4 semaines. Bon prix au mg actif." },
+        { author: 'Tom S.', rating: 5, weeks: 10, verified: false, helpful: 5,
+          comment: "Sans pipérine, le curcuma c'est rien. Heureux que Skynova le dise enfin." }
+      ]
+    },
+    {
+      id: 'omg', mark: 'OMG', brand: 'Nutripure', name: 'Oméga-3 EPA/DHA', category: 'targeted',
+      price: 32.90, pricePerDose: '0,55 € / dose', servings: 60, activeDose: '2 g',
+      purity: 96, origin: 'Pérou', certifications: ['EPAX', 'Friend of the Sea', 'IFOS 5-stars'], additives: [],
+      badges: [{ label: 'Targeted', tone: 'lime' }, { label: 'Cerveau', tone: '' }],
+      description: "Huile de poisson EPAX, 2 g d'oméga-3 dont 1200 mg d'EPA et 800 mg de DHA par dose. Pêche anchois sauvages Pérou, désoxydée à froid.",
+      scoreEfficacy: 91, scorePrice: 78,
+      breakdown: { dosage: 36, purity: 28, certif: 19, trace: 8 },
+      whyScore: [
+        "2 g d'oméga-3 par dose dont 1200 EPA + 800 DHA, doses efficaces validées EFSA",
+        "Pureté 96 % avec norme IFOS 5 étoiles (la plus stricte sur l'oxydation et la pollution)",
+        "Triple certif : EPAX (fabricant norvégien référence) + Friend of the Sea + IFOS",
+        "Anchois sauvages Pérou : espèce non endémique, pêche durable certifiée",
+        "Désoxydation à froid : pas de rancissement, pas d'arrière-goût"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Huile de poisson EPAX (anchois)', dose: '2,1 g' },
+          { name: 'Tocophérols mixtes (anti-oxydant naturel)', dose: '8 mg' },
+          { name: 'Capsule gélatine de poisson', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Oméga-3 totaux', value: '2 g' },
+          { label: 'EPA', value: '1200 mg' },
+          { label: 'DHA', value: '800 mg' },
+          { label: 'Vitamine E', value: '8 mg' }
+        ]
+      },
+      reviews: [
+        { author: 'Caroline H.', rating: 5, weeks: 16, verified: true, helpful: 18,
+          comment: "Aucun goût de poisson en remontée. Triglycérides en baisse aux dernières analyses. La certification IFOS 5★ rassure." },
+        { author: 'Marc K.', rating: 5, weeks: 8, verified: true, helpful: 11,
+          comment: "Top en complément d'un régime peu poissonneux. Le rapport EPA/DHA est cohérent avec la littérature." },
+        { author: 'Jeanne A.', rating: 4, weeks: 24, verified: false, helpful: 7,
+          comment: "Boîte de 60 = 1 mois si 2 capsules/jour. C'est cher mais la qualité Nutripure est constante." }
+      ]
+    }
+  ];
+
+  function getProductById(id) {
+    return PRODUCTS.find(function (p) { return p.id === id; }) || null;
   }
-  function renderProductStub(params) {
-    const id = (params && params[0]) || '—';
-    const content = stub('Fiche produit', "Fiche complète avec scores, alternatives et avis — Phase 9. ID : " + id);
-    return appLayout('product', content);
+
+  function getCategoryName(catId) {
+    const c = CATEGORIES.find(function (x) { return x.id === catId; });
+    return c ? c.name : catId;
+  }
+
+  function getAlternatives(p, n) {
+    n = n || 3;
+    return PRODUCTS.filter(function (x) {
+      return x.id !== p.id && x.category === p.category;
+    }).slice(0, n);
+  }
+
+  function getStackFor(p, n) {
+    n = n || 2;
+    const complement = {
+      sport:     ['vitality', 'sleep'],
+      sleep:     ['vitality', 'digestion'],
+      digestion: ['vitality', 'beauty'],
+      beauty:    ['vitality', 'sleep'],
+      joints:    ['vitality', 'sport'],
+      vitality:  ['sport',    'sleep'],
+      targeted:  ['vitality', 'sleep']
+    };
+    const targets = complement[p.category] || ['vitality'];
+    const stack = [];
+    for (let i = 0; i < targets.length && stack.length < n; i++) {
+      const found = PRODUCTS.find(function (x) {
+        return x.category === targets[i] && x.id !== p.id && !stack.find(function (s) { return s.id === x.id; });
+      });
+      if (found) stack.push(found);
+    }
+    return stack;
+  }
+
+  /* ---------- /search ---------- */
+  let searchState = null;
+  function getSearchState() {
+    if (!searchState) {
+      searchState = {
+        query: '',
+        category: 'all',
+        minScore: 0,
+        maxPrice: 50,
+        certifications: [],
+        sort: 'score'
+      };
+    }
+    return searchState;
+  }
+
+  const SEARCH_CERTS = ['ISO 22000', 'GMP', 'AB', 'KSM-66', 'Creapure', 'Friend of the Sea'];
+  const SEARCH_SORTS = [
+    { id: 'score',     label: 'Score décroissant' },
+    { id: 'price-asc', label: 'Prix croissant' },
+    { id: 'price-desc',label: 'Prix décroissant' },
+    { id: 'name',      label: 'Nom (A → Z)' }
+  ];
+
+  function applySearchFilters() {
+    const s = getSearchState();
+    const q = s.query.trim().toLowerCase();
+    let list = PRODUCTS.filter(function (p) {
+      if (q && (p.name + ' ' + p.brand).toLowerCase().indexOf(q) === -1) return false;
+      if (s.category !== 'all' && p.category !== s.category) return false;
+      if (p.scoreEfficacy < s.minScore) return false;
+      if (p.price > s.maxPrice) return false;
+      if (s.certifications.length) {
+        const has = s.certifications.every(function (c) {
+          return p.certifications.indexOf(c) !== -1;
+        });
+        if (!has) return false;
+      }
+      return true;
+    });
+    list.sort(function (a, b) {
+      if (s.sort === 'score')      return b.scoreEfficacy - a.scoreEfficacy;
+      if (s.sort === 'price-asc')  return a.price - b.price;
+      if (s.sort === 'price-desc') return b.price - a.price;
+      if (s.sort === 'name')       return a.name.localeCompare(b.name);
+      return 0;
+    });
+    return list;
+  }
+
+  function searchProductCard(p) {
+    const tone = getTone(p.scoreEfficacy);
+    return el('a', { href: '#product/' + p.id, class: 'sp-card' }, [
+      el('div', { class: 'sp-card__image' }, [
+        el('span', { class: 'sp-card__mark mono' }, p.mark),
+        el('span', { class: 'sp-card__cat overline mono' }, '· ' + getCategoryName(p.category).split(' ')[0].toUpperCase() + ' ·')
+      ]),
+      el('div', { class: 'sp-card__body' }, [
+        el('span', { class: 'overline sp-card__brand' }, '· ' + p.brand + ' ·'),
+        el('h3', { class: 'sp-card__name' }, p.name),
+        el('div', { class: 'sp-card__pills' },
+          p.badges.map(function (b) {
+            return el('span', { class: 'pill' + (b.tone ? ' pill--' + b.tone : '') }, b.label);
+          })
+        ),
+        el('div', { class: 'sp-card__bottom' }, [
+          el('div', { class: 'sp-card__price-block' }, [
+            el('span', { class: 'sp-card__price mono' }, p.price.toFixed(2).replace('.', ',') + ' €'),
+            el('span', { class: 'sp-card__price-per mono' }, p.pricePerDose)
+          ]),
+          el('span', { class: 'sp-card__score sp-card__score--' + tone + ' mono' }, [
+            el('span', null, String(p.scoreEfficacy)),
+            el('span', { class: 'sp-card__score-of' }, '/100')
+          ])
+        ])
+      ])
+    ]);
+  }
+
+  function renderSearch() {
+    function rerender() {
+      const main = wrap.querySelector('.app-main');
+      if (!main) return;
+      main.innerHTML = '';
+      main.appendChild(buildSearchContent());
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    }
+
+    function buildSearchContent() {
+      const s = getSearchState();
+      const results = applySearchFilters();
+
+      const filtersPanel = el('aside', { class: 'search-filters' }, [
+        el('div', { class: 'search-filters__head' }, [
+          el('span', { class: 'overline' }, '· FILTRES ·'),
+          el('button', {
+            type: 'button',
+            class: 'search-filters__reset mono',
+            onclick: function () {
+              searchState = null;
+              rerender();
+            }
+          }, '× Reset')
+        ]),
+
+        // Categories
+        el('div', { class: 'search-filter' }, [
+          el('span', { class: 'overline search-filter__label' }, '· Catégorie ·'),
+          el('div', { class: 'search-filter__chips' }, [
+            el('button', {
+              type: 'button',
+              class: 'sf-chip' + (s.category === 'all' ? ' is-active' : ''),
+              onclick: function () { s.category = 'all'; rerender(); }
+            }, 'Toutes (' + PRODUCTS.length + ')')
+          ].concat(CATEGORIES.map(function (c) {
+            const count = PRODUCTS.filter(function (p) { return p.category === c.id; }).length;
+            return el('button', {
+              type: 'button',
+              class: 'sf-chip' + (s.category === c.id ? ' is-active' : ''),
+              onclick: function () { s.category = c.id; rerender(); }
+            }, c.name + ' (' + count + ')');
+          })))
+        ]),
+
+        // Min score
+        el('div', { class: 'search-filter' }, [
+          el('div', { class: 'search-filter__head-row' }, [
+            el('span', { class: 'overline search-filter__label' }, '· Score minimum ·'),
+            el('span', { class: 'search-filter__value mono' }, String(s.minScore) + ' / 100')
+          ]),
+          el('input', {
+            type: 'range', min: '0', max: '100', step: '5',
+            value: String(s.minScore),
+            class: 'search-filter__slider',
+            oninput: function (e) {
+              s.minScore = parseInt(e.target.value, 10);
+              const v = wrap.querySelectorAll('.search-filter__value')[0];
+              if (v) v.textContent = s.minScore + ' / 100';
+              // Defer rerender to avoid sliding lag
+              clearTimeout(s._scoreTO);
+              s._scoreTO = setTimeout(rerender, 180);
+            }
+          })
+        ]),
+
+        // Max price
+        el('div', { class: 'search-filter' }, [
+          el('div', { class: 'search-filter__head-row' }, [
+            el('span', { class: 'overline search-filter__label' }, '· Prix maximum ·'),
+            el('span', { class: 'search-filter__value mono' }, s.maxPrice + ' €')
+          ]),
+          el('input', {
+            type: 'range', min: '10', max: '50', step: '5',
+            value: String(s.maxPrice),
+            class: 'search-filter__slider',
+            oninput: function (e) {
+              s.maxPrice = parseInt(e.target.value, 10);
+              const v = wrap.querySelectorAll('.search-filter__value')[1];
+              if (v) v.textContent = s.maxPrice + ' €';
+              clearTimeout(s._priceTO);
+              s._priceTO = setTimeout(rerender, 180);
+            }
+          })
+        ]),
+
+        // Certifications
+        el('div', { class: 'search-filter' }, [
+          el('span', { class: 'overline search-filter__label' }, '· Certifications ·'),
+          el('div', { class: 'search-filter__chips' },
+            SEARCH_CERTS.map(function (c) {
+              return el('button', {
+                type: 'button',
+                class: 'sf-chip sf-chip--sm' + (s.certifications.indexOf(c) !== -1 ? ' is-active' : ''),
+                onclick: function () {
+                  const i = s.certifications.indexOf(c);
+                  if (i === -1) s.certifications.push(c);
+                  else s.certifications.splice(i, 1);
+                  rerender();
+                }
+              }, c);
+            })
+          )
+        ])
+      ]);
+
+      const resultsArea = el('section', { class: 'search-results' }, [
+        // Search bar
+        el('div', { class: 'search-bar' }, [
+          el('i', { 'data-lucide': 'search', class: 'search-bar__icon' }),
+          el('input', {
+            type: 'search',
+            placeholder: 'Cherche par nom, marque ou principe actif…',
+            value: s.query,
+            class: 'search-bar__input',
+            oninput: function (e) {
+              s.query = e.target.value;
+              clearTimeout(s._qTO);
+              s._qTO = setTimeout(rerender, 180);
+            }
+          })
+        ]),
+
+        // Sort bar
+        el('div', { class: 'search-sort-bar' }, [
+          el('span', { class: 'overline mono search-sort-bar__count' },
+            '· ' + results.length + ' / ' + PRODUCTS.length + ' produits ·'),
+          el('div', { class: 'search-sort-bar__sort' }, [
+            el('span', { class: 'overline search-sort-bar__sort-label' }, 'Trier par'),
+            el('div', { class: 'search-sort-bar__chips' },
+              SEARCH_SORTS.map(function (so) {
+                return el('button', {
+                  type: 'button',
+                  class: 'sf-chip sf-chip--sm' + (s.sort === so.id ? ' is-active' : ''),
+                  onclick: function () { s.sort = so.id; rerender(); }
+                }, so.label);
+              })
+            )
+          ])
+        ]),
+
+        // Grid or empty state
+        results.length === 0
+          ? el('div', { class: 'search-empty' }, [
+              el('i', { 'data-lucide': 'search-x', class: 'search-empty__icon' }),
+              el('h3', { class: 'search-empty__title' }, 'Aucun produit ne correspond.'),
+              el('p', { class: 'search-empty__sub' }, "Essaie d'élargir tes filtres ou de réinitialiser."),
+              el('button', {
+                type: 'button',
+                class: 'cta cta--secondary',
+                onclick: function () { searchState = null; rerender(); }
+              }, '× Réinitialiser')
+            ])
+          : el('div', { class: 'search-grid' }, results.map(searchProductCard))
+      ]);
+
+      return el('div', { class: 'search-page' }, [
+        el('header', { class: 'search-page__head' }, [
+          el('span', { class: 'overline mono' }, '· EXPLORATION · 2 200 RÉFÉRENCES ·'),
+          el('h1', { class: 'search-page__title' }, [
+            'Trouve ',
+            el('span', { class: 'search-page__title-lime' }, 'le bon complément.')
+          ])
+        ]),
+        el('div', { class: 'search-layout' }, [filtersPanel, resultsArea])
+      ]);
+    }
+
+    const wrap = appLayout('search', buildSearchContent());
+    return wrap;
+  }
+
+  /* ---------- /product/:id ---------- */
+  function bigGauge(value, label, tone) {
+    const wrap = el('div', { class: 'big-gauge' });
+    const g = renderGauge(value, { size: 200, stroke: 10, tone: tone, delay: 200 });
+    wrap.appendChild(g);
+    wrap.appendChild(el('div', { class: 'big-gauge__meta' }, [
+      el('span', { class: 'overline big-gauge__label' }, label),
+      el('span', { class: 'big-gauge__hint mono' },
+        value >= 85 ? 'EXCELLENT' :
+        value >= 70 ? 'BON' :
+        value >= 50 ? 'MOYEN' : 'À ÉVITER')
+    ]));
+    return wrap;
+  }
+
+  function breakdownRow(label, weight, value, color) {
+    const pct = value / weight * 100;
+    return el('div', { class: 'breakdown-row' }, [
+      el('span', { class: 'breakdown-row__label' }, label),
+      el('div', { class: 'breakdown-row__bar' }, [
+        el('div', { class: 'breakdown-row__fill breakdown-row__fill--' + color, style: { width: pct + '%' } })
+      ]),
+      el('span', { class: 'breakdown-row__val mono' }, value + ' / ' + weight)
+    ]);
+  }
+
+  function reviewItem(r) {
+    return el('article', { class: 'review-item' }, [
+      el('header', { class: 'review-item__head' }, [
+        el('div', { class: 'review-item__author' }, [
+          el('span', { class: 'review-item__author-name' }, r.author),
+          el('span', { class: 'review-item__rating', 'aria-label': r.rating + ' étoiles sur 5' },
+            '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(0, 5 - r.rating)
+          )
+        ]),
+        el('div', { class: 'review-item__meta mono' }, [
+          r.verified ? el('span', { class: 'review-item__verified' }, '✓ Achat vérifié') : null,
+          el('span', null, '· Cure ' + r.weeks + ' semaines'),
+          el('span', { class: 'review-item__helpful' }, '· ' + r.helpful + ' utiles')
+        ])
+      ]),
+      el('p', { class: 'review-item__body' }, r.comment)
+    ]);
+  }
+
+  function altMiniCard(p) {
+    const tone = getTone(p.scoreEfficacy);
+    return el('a', { href: '#product/' + p.id, class: 'alt-mini' }, [
+      el('div', { class: 'alt-mini__image' }, [
+        el('span', { class: 'alt-mini__mark mono' }, p.mark)
+      ]),
+      el('div', { class: 'alt-mini__body' }, [
+        el('span', { class: 'overline alt-mini__brand' }, '· ' + p.brand + ' ·'),
+        el('span', { class: 'alt-mini__name' }, p.name),
+        el('div', { class: 'alt-mini__bottom' }, [
+          el('span', { class: 'alt-mini__price mono' }, p.price.toFixed(2).replace('.', ',') + ' €'),
+          el('span', { class: 'alt-mini__score alt-mini__score--' + tone + ' mono' },
+            String(p.scoreEfficacy) + '/100')
+        ])
+      ])
+    ]);
+  }
+
+  function renderProduct(params) {
+    const id = (params && params[0]) || 'whe';
+    const p = getProductById(id) || PRODUCTS[0];
+    const tone = getTone(p.scoreEfficacy);
+    const priceTone = getTone(p.scorePrice);
+
+    const content = el('article', { class: 'product-page' }, [
+      el('div', { class: 'product-page__back-row' }, [
+        el('a', { href: '#search', class: 'product-page__back mono' }, '← Retour à la recherche')
+      ]),
+
+      // HERO
+      el('section', { class: 'product-hero' }, [
+        el('div', { class: 'product-hero__image' }, [
+          el('div', { class: 'product-hero__image-top' }, [
+            el('span', { class: 'mono product-hero__image-tag' }, 'REF · SKY-' + p.id.toUpperCase() + '-001'),
+            el('span', { class: 'mono product-hero__image-tag product-hero__image-tag--live' }, [
+              el('span', { class: 'product-hero__live-dot', 'aria-hidden': 'true' }),
+              'SCAN OK'
+            ])
+          ]),
+          el('div', { class: 'product-hero__mark mono', 'aria-hidden': 'true' }, p.mark),
+          el('div', { class: 'product-hero__image-bottom' }, [
+            el('span', { class: 'mono product-hero__image-tag' }, p.activeDose + ' / dose')
+          ])
+        ]),
+        el('div', { class: 'product-hero__body' }, [
+          el('span', { class: 'overline product-hero__cat' }, '· ' + getCategoryName(p.category).toUpperCase() + ' ·'),
+          el('span', { class: 'overline product-hero__brand mono' }, '· ' + p.brand + ' ·'),
+          el('h1', { class: 'product-hero__name' }, p.name),
+          el('p', { class: 'product-hero__desc' }, p.description),
+          el('div', { class: 'product-hero__pills' },
+            p.badges.map(function (b) {
+              return el('span', { class: 'pill' + (b.tone ? ' pill--' + b.tone : '') }, b.label);
+            })
+          ),
+          el('div', { class: 'product-hero__price-row' }, [
+            el('div', null, [
+              el('span', { class: 'product-hero__price mono' }, p.price.toFixed(2).replace('.', ',') + ' €'),
+              el('span', { class: 'product-hero__price-per mono' }, ' · ' + p.pricePerDose)
+            ]),
+            el('span', { class: 'product-hero__servings mono' }, p.servings + ' doses')
+          ]),
+          el('div', { class: 'product-hero__actions' }, [
+            el('a', { href: '#', class: 'cta cta--primary product-hero__cta' }, [
+              el('i', { 'data-lucide': 'heart', class: 'cta__icon' }),
+              el('span', null, 'Ajouter aux favoris')
+            ]),
+            el('a', { href: '#', class: 'cta cta--secondary' }, [
+              el('i', { 'data-lucide': 'external-link', class: 'cta__icon' }),
+              el('span', null, 'Voir le produit')
+            ])
+          ])
+        ])
+      ]),
+
+      // STICKY TABS
+      el('nav', { class: 'product-tabs', 'aria-label': 'Navigation fiche produit' },
+        ['scores', 'why', 'composition', 'alternatives', 'stack', 'reviews'].map(function (k, i) {
+          const labels = {
+            scores: 'Scores',
+            why: 'Pourquoi ce score',
+            composition: 'Composition',
+            alternatives: 'Alternatives',
+            stack: 'Stack recommandé',
+            reviews: 'Avis communauté'
+          };
+          return el('a', {
+            href: '#product/' + p.id,
+            class: 'product-tabs__link' + (i === 0 ? ' is-active' : ''),
+            dataset: { target: k }
+          }, [
+            el('span', { class: 'product-tabs__num mono' }, '0' + (i + 1)),
+            el('span', { class: 'product-tabs__lbl' }, labels[k])
+          ]);
+        })
+      ),
+
+      el('div', { class: 'product-sections' }, [
+        // 01 — Scores
+        el('section', { id: 'scores', class: 'product-section' }, [
+          el('header', { class: 'product-section__head' }, [
+            el('span', { class: 'overline mono' }, '· 01 · SCORES ·'),
+            el('h2', { class: 'product-section__title' }, 'Deux scores indépendants, un verdict.')
+          ]),
+          el('div', { class: 'product-scores' }, [
+            bigGauge(p.scoreEfficacy, "Efficacité", tone),
+            bigGauge(p.scorePrice,    "Prix au mg actif", priceTone)
+          ]),
+          el('div', { class: 'product-breakdown' }, [
+            el('span', { class: 'overline' }, '· DÉCOMPOSITION DU SCORE D\'EFFICACITÉ ·'),
+            breakdownRow('Dosage',         40, p.breakdown.dosage, 'lime'),
+            breakdownRow('Pureté',         30, p.breakdown.purity, 'mercury'),
+            breakdownRow('Certifications', 20, p.breakdown.certif, 'amber'),
+            breakdownRow('Traçabilité',    10, p.breakdown.trace,  'coral')
+          ])
+        ]),
+
+        // 02 — Why
+        el('section', { id: 'why', class: 'product-section' }, [
+          el('header', { class: 'product-section__head' }, [
+            el('span', { class: 'overline mono' }, '· 02 · POURQUOI CE SCORE ·'),
+            el('h2', { class: 'product-section__title' }, 'Le détail factuel.')
+          ]),
+          el('ul', { class: 'why-list' },
+            p.whyScore.map(function (w, i) {
+              return el('li', { class: 'why-item' }, [
+                el('span', { class: 'why-item__num mono' }, '0' + (i + 1)),
+                el('span', { class: 'why-item__text' }, w)
+              ]);
+            })
+          )
+        ]),
+
+        // 03 — Composition (accordion)
+        el('section', { id: 'composition', class: 'product-section' }, [
+          el('header', { class: 'product-section__head' }, [
+            el('span', { class: 'overline mono' }, '· 03 · COMPOSITION ·'),
+            el('h2', { class: 'product-section__title' }, 'Ingrédients & valeurs par dose.')
+          ]),
+          el('details', { class: 'composition-block', open: 'open' }, [
+            el('summary', { class: 'composition-block__head' }, [
+              el('span', { class: 'overline mono composition-block__tag' }, '· INGRÉDIENTS ·'),
+              el('span', { class: 'composition-block__icon mono', 'aria-hidden': 'true' }, '+')
+            ]),
+            el('table', { class: 'composition-table' }, [
+              el('tbody', null,
+                p.composition.ingredients.map(function (ing) {
+                  return el('tr', null, [
+                    el('td', { class: 'composition-table__name' }, ing.name),
+                    el('td', { class: 'composition-table__dose mono' }, ing.dose)
+                  ]);
+                })
+              )
+            ])
+          ]),
+          el('details', { class: 'composition-block' }, [
+            el('summary', { class: 'composition-block__head' }, [
+              el('span', { class: 'overline mono composition-block__tag' }, '· VALEURS PAR DOSE ·'),
+              el('span', { class: 'composition-block__icon mono', 'aria-hidden': 'true' }, '+')
+            ]),
+            el('div', { class: 'perdose-grid' },
+              p.composition.perDose.map(function (d) {
+                return el('div', { class: 'perdose-cell' }, [
+                  el('span', { class: 'overline perdose-cell__label' }, d.label),
+                  el('span', { class: 'perdose-cell__val mono' }, d.value)
+                ]);
+              })
+            )
+          ]),
+          el('details', { class: 'composition-block' }, [
+            el('summary', { class: 'composition-block__head' }, [
+              el('span', { class: 'overline mono composition-block__tag' }, '· CERTIFICATIONS ·'),
+              el('span', { class: 'composition-block__icon mono', 'aria-hidden': 'true' }, '+')
+            ]),
+            el('div', { class: 'certif-list' },
+              p.certifications.length
+                ? p.certifications.map(function (c) {
+                    return el('span', { class: 'pill pill--lime' }, '✓ ' + c);
+                  })
+                : [el('span', { class: 'mono perdose-cell__val' }, 'Aucune certification déclarée.')]
+            )
+          ])
+        ]),
+
+        // 04 — Alternatives
+        el('section', { id: 'alternatives', class: 'product-section' }, [
+          el('header', { class: 'product-section__head' }, [
+            el('span', { class: 'overline mono' }, '· 04 · ALTERNATIVES ·'),
+            el('h2', { class: 'product-section__title' }, "3 produits que Skynova recommande à la place."),
+            el('p', { class: 'product-section__sub' }, "Sélectionnés dans la même catégorie selon le score d'efficacité et le score prix combinés.")
+          ]),
+          el('div', { class: 'alt-mini-grid' }, getAlternatives(p, 3).map(altMiniCard))
+        ]),
+
+        // 05 — Stack
+        el('section', { id: 'stack', class: 'product-section' }, [
+          el('header', { class: 'product-section__head' }, [
+            el('span', { class: 'overline mono' }, '· 05 · STACK RECOMMANDÉ ·'),
+            el('h2', { class: 'product-section__title' }, "Avec quoi le combiner."),
+            el('p', { class: 'product-section__sub' }, "2 compléments d'autres catégories qui agissent en synergie avec celui-ci.")
+          ]),
+          el('div', { class: 'alt-mini-grid' }, getStackFor(p, 2).map(altMiniCard))
+        ]),
+
+        // 06 — Reviews
+        el('section', { id: 'reviews', class: 'product-section' }, [
+          el('header', { class: 'product-section__head' }, [
+            el('span', { class: 'overline mono' }, '· 06 · AVIS COMMUNAUTÉ ·'),
+            el('h2', { class: 'product-section__title' }, "Ce qu'en disent ceux qui l'ont testé."),
+            el('p', { class: 'product-section__sub' }, p.reviews.length + " avis vérifiés et triés par utilité.")
+          ]),
+          el('div', { class: 'review-list' }, p.reviews.map(reviewItem))
+        ])
+      ])
+    ]);
+
+    const wrap = appLayout('product', content);
+
+    // Setup scroll-spy after DOM insertion
+    setTimeout(function () { setupScrollSpy(wrap); }, 0);
+    return wrap;
+  }
+
+  /* ---------- Scroll-spy for sticky tabs ---------- */
+  function setupScrollSpy(root) {
+    const tabs = root.querySelectorAll('.product-tabs__link');
+    const sections = root.querySelectorAll('.product-section[id]');
+    if (!tabs.length || !sections.length) return;
+
+    // Smooth scroll on tab click
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = t.dataset.target;
+        const sec = root.querySelector('#' + target);
+        if (!sec) return;
+        const rect = sec.getBoundingClientRect();
+        const top = window.scrollY + rect.top - 70;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      });
+    });
+
+    // IntersectionObserver to update active tab on scroll
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            tabs.forEach(function (t) {
+              t.classList.toggle('is-active', t.dataset.target === id);
+            });
+          }
+        });
+      }, { rootMargin: '-30% 0px -55% 0px' });
+      sections.forEach(function (s) { io.observe(s); });
+    }
   }
 
   /* ---------- Renderers ---------- */
@@ -2225,8 +3253,8 @@
     onboarding:   renderOnboarding,
     lab:          renderLab,
     scan:         renderScan,
-    search:       renderSearchStub,
-    product:      renderProductStub
+    search:       renderSearch,
+    product:      renderProduct
   };
   window.skynova.renderers = RENDERERS;
 
