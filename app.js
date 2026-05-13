@@ -1347,6 +1347,534 @@
     ]);
   }
 
+  /* =========================================================
+     Phase 7 — Auth + Onboarding
+     ========================================================= */
+
+  /* ---------- Supabase auth helpers (demo fallback) ---------- */
+  async function skSignUp(email, password) {
+    if (!supabase) {
+      localStorage.setItem('skynova_demo_user', JSON.stringify({ email, demo: true, t: Date.now() }));
+      return { user: { email: email }, error: null, demo: true };
+    }
+    try {
+      const result = await supabase.auth.signUp({ email: email, password: password });
+      return { user: result.data && result.data.user, error: result.error, demo: false };
+    } catch (err) {
+      return { user: null, error: err, demo: false };
+    }
+  }
+
+  async function skSignIn(email, password) {
+    if (!supabase) {
+      localStorage.setItem('skynova_demo_user', JSON.stringify({ email: email, demo: true, t: Date.now() }));
+      return { user: { email: email }, error: null, demo: true };
+    }
+    try {
+      const result = await supabase.auth.signInWithPassword({ email: email, password: password });
+      return { user: result.data && result.data.user, error: result.error, demo: false };
+    } catch (err) {
+      return { user: null, error: err, demo: false };
+    }
+  }
+
+  async function skGetUser() {
+    if (!supabase) {
+      const raw = localStorage.getItem('skynova_demo_user');
+      return raw ? JSON.parse(raw) : null;
+    }
+    try {
+      const result = await supabase.auth.getUser();
+      return result.data && result.data.user;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async function skUpdateProfile(data) {
+    if (!supabase) {
+      localStorage.setItem('skynova_demo_profile', JSON.stringify(data));
+      return { error: null, demo: true };
+    }
+    try {
+      const userResult = await supabase.auth.getUser();
+      const user = userResult.data && userResult.data.user;
+      if (!user) return { error: { message: 'Pas de session active.' } };
+      const payload = Object.assign({ id: user.id }, data);
+      const result = await supabase.from('profiles').upsert(payload);
+      return { error: result.error, demo: false };
+    } catch (err) {
+      return { error: err };
+    }
+  }
+
+  window.skynova.auth = { signUp: skSignUp, signIn: skSignIn, getUser: skGetUser, updateProfile: skUpdateProfile };
+
+  /* ---------- Page : /auth (split-screen 50/50) ---------- */
+  function buildAuthForm(mode) {
+    const isLogin = mode === 'login';
+    return el('form', { class: 'auth__form', dataset: { mode: mode }, novalidate: 'novalidate' }, [
+      el('h1', { class: 'auth__title' }, isLogin ? 'Re-bienvenue.' : 'Création de compte.'),
+      el('p', { class: 'auth__sub' }, isLogin
+        ? 'Reconnecte-toi pour retrouver ton lab et tes favoris.'
+        : '2 champs, et tu peux commencer à scanner. Aucune CB demandée.'),
+
+      el('label', { class: 'field' }, [
+        el('span', { class: 'field__label' }, 'Email'),
+        el('input', {
+          type: 'email',
+          name: 'email',
+          autocomplete: 'email',
+          required: 'required',
+          placeholder: 'lea@example.com',
+          class: 'field__input'
+        })
+      ]),
+
+      el('label', { class: 'field' }, [
+        el('span', { class: 'field__label' }, 'Mot de passe'),
+        el('input', {
+          type: 'password',
+          name: 'password',
+          autocomplete: isLogin ? 'current-password' : 'new-password',
+          required: 'required',
+          minlength: '8',
+          placeholder: 'Minimum 8 caractères',
+          class: 'field__input'
+        }),
+        !isLogin ? el('span', { class: 'field__hint mono' }, '· 8 caractères minimum') : null
+      ]),
+
+      el('button', {
+        type: 'submit',
+        class: 'cta cta--primary cta--block auth__submit'
+      }, [
+        el('span', { class: 'auth__submit-label' }, isLogin ? 'Se connecter' : 'Créer mon compte'),
+        el('span', { class: 'auth__submit-spinner', 'aria-hidden': 'true' })
+      ]),
+
+      el('div', { class: 'auth__feedback', role: 'alert', 'aria-live': 'polite' }),
+
+      isLogin
+        ? el('a', { href: 'mailto:support@skynova.fr', class: 'auth__link mono' }, '· Mot de passe oublié ? ·')
+        : el('p', { class: 'auth__legal mono' }, [
+            'En continuant, tu acceptes nos ',
+            el('a', { href: '#legal' }, 'CGU'),
+            ' et notre ',
+            el('a', { href: '#legal' }, 'confidentialité'),
+            '.'
+          ])
+    ]);
+  }
+
+  function renderAuth(params) {
+    const defaultMode = (params && params[0] === 'signup') ? 'signup' : 'login';
+
+    const section = el('section', { class: 'auth' }, [
+      // ----- Left : quote -----
+      el('aside', { class: 'auth__left' }, [
+        el('div', { class: 'auth__left-top' }, [
+          el('a', { href: '#home', class: 'skynova-mark skynova-mark--lg' }, [
+            el('span', { class: 'skynova-mark__word' }, 'skynova'),
+            el('span', { class: 'skynova-mark__dot', 'aria-hidden': 'true' })
+          ]),
+          el('span', { class: 'overline mono' }, '· ENTRER DANS LE LAB ·')
+        ]),
+
+        el('div', { class: 'auth__quote' }, [
+          el('span', { class: 'overline mono auth__quote-tag' }, '· POURQUOI SKYNOVA ·'),
+          el('blockquote', { class: 'auth__quote-text serif' }, [
+            el('span', { class: 'auth__quote-mark', 'aria-hidden': 'true' }, '«'),
+            " On a construit Skynova parce qu'on en avait marre de payer 35 € pour des compléments dosés à 60 % de ce qu'on croyait. Maintenant on calcule, et on choisit. ",
+            el('span', { class: 'auth__quote-mark', 'aria-hidden': 'true' }, '»')
+          ]),
+          el('div', { class: 'auth__quote-author' }, [
+            el('span', { class: 'auth__quote-name' }, 'Maxime C. & Léa B.'),
+            el('span', { class: 'auth__quote-role mono' }, 'Fondateurs · Paris · MMXXVI')
+          ])
+        ]),
+
+        el('div', { class: 'auth__left-bottom' }, [
+          el('div', { class: 'auth__sweep', 'aria-hidden': 'true' }),
+          el('div', { class: 'auth__bottom-meta mono' }, [
+            el('span', null, 'N° 001 · Paris'),
+            el('span', null, '·'),
+            el('span', null, '12 000 inscrits'),
+            el('span', null, '·'),
+            el('span', null, '03 · 05 · 26')
+          ])
+        ])
+      ]),
+
+      // ----- Right : tabs + form -----
+      el('section', { class: 'auth__right' }, [
+        el('div', { class: 'auth__form-wrap' }, [
+          el('div', { class: 'auth__tabs', role: 'tablist' }, [
+            el('button', {
+              class: 'auth__tab' + (defaultMode === 'login'  ? ' is-active' : ''),
+              type: 'button',
+              role: 'tab',
+              dataset: { tab: 'login' }
+            }, 'Connexion'),
+            el('button', {
+              class: 'auth__tab' + (defaultMode === 'signup' ? ' is-active' : ''),
+              type: 'button',
+              role: 'tab',
+              dataset: { tab: 'signup' }
+            }, 'Créer un compte')
+          ]),
+          buildAuthForm('login'),
+          buildAuthForm('signup')
+        ])
+      ])
+    ]);
+
+    // Set initial visibility
+    setTimeout(function () {
+      const tabs = section.querySelectorAll('.auth__tab');
+      const forms = section.querySelectorAll('.auth__form');
+      function showMode(mode) {
+        tabs.forEach(function (t) {
+          t.classList.toggle('is-active', t.dataset.tab === mode);
+          t.setAttribute('aria-selected', t.dataset.tab === mode ? 'true' : 'false');
+        });
+        forms.forEach(function (f) {
+          f.classList.toggle('is-active', f.dataset.mode === mode);
+        });
+      }
+      showMode(defaultMode);
+
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () { showMode(t.dataset.tab); });
+      });
+
+      // Form submit handler
+      forms.forEach(function (form) {
+        form.addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const mode = form.dataset.mode;
+          const email = form.email.value.trim();
+          const password = form.password.value;
+          const feedback = form.querySelector('.auth__feedback');
+          const submit = form.querySelector('.auth__submit');
+
+          feedback.textContent = '';
+          feedback.classList.remove('auth__feedback--err', 'auth__feedback--ok');
+
+          if (!email || !password || password.length < 8) {
+            feedback.textContent = '× Vérifie ton email et mot de passe (8 caractères mini).';
+            feedback.classList.add('auth__feedback--err');
+            return;
+          }
+
+          submit.classList.add('is-loading');
+          submit.disabled = true;
+
+          const fn = mode === 'login' ? skSignIn : skSignUp;
+          const res = await fn(email, password);
+
+          submit.classList.remove('is-loading');
+          submit.disabled = false;
+
+          if (res.error) {
+            const msg = (res.error && res.error.message) || 'Une erreur est survenue.';
+            feedback.textContent = '× ' + msg;
+            feedback.classList.add('auth__feedback--err');
+            return;
+          }
+
+          feedback.textContent = res.demo
+            ? '✓ Compte ' + (mode === 'login' ? 'connecté' : 'créé') + ' (mode démo). Redirection…'
+            : '✓ Succès. Redirection…';
+          feedback.classList.add('auth__feedback--ok');
+
+          setTimeout(function () {
+            window.location.hash = mode === 'signup' ? 'onboarding' : 'lab';
+          }, 700);
+        });
+      });
+    }, 0);
+
+    return section;
+  }
+
+  /* ---------- Page : /onboarding (4 étapes) ---------- */
+  let onbState = null;
+  function getOnbState() {
+    if (!onbState) {
+      onbState = {
+        step: 0,
+        data: { goals: [], gender: null, ageRange: null, budget: 30, allergens: [] }
+      };
+    }
+    return onbState;
+  }
+  function resetOnb() { onbState = null; }
+
+  const ONB_GOALS = [
+    { id: 'vitality',   label: 'Vitalité',    icon: 'zap'      },
+    { id: 'sleep',      label: 'Sommeil',     icon: 'moon'     },
+    { id: 'digestion',  label: 'Digestion',   icon: 'leaf'     },
+    { id: 'beauty',     label: 'Beauté',      icon: 'sparkles' },
+    { id: 'joints',     label: 'Articulaire', icon: 'shield'   },
+    { id: 'sport',      label: 'Sport',       icon: 'dumbbell' },
+    { id: 'targeted',   label: 'Santé ciblée', icon: 'target'  }
+  ];
+  const ONB_GENDERS = [
+    { id: 'female', label: 'Femme' },
+    { id: 'male',   label: 'Homme' },
+    { id: 'other',  label: 'Préfère ne pas dire' }
+  ];
+  const ONB_AGES = [
+    { id: '<25',   label: 'Moins de 25 ans' },
+    { id: '25-34', label: '25 — 34 ans'    },
+    { id: '35-44', label: '35 — 44 ans'    },
+    { id: '45-54', label: '45 — 54 ans'    },
+    { id: '55+',   label: '55 ans et plus' }
+  ];
+  const ONB_ALLERGENS = [
+    { id: 'gluten-free',   label: 'Sans gluten' },
+    { id: 'lactose-free',  label: 'Sans lactose' },
+    { id: 'vegan',         label: 'Vegan' },
+    { id: 'bio',           label: 'Bio uniquement' },
+    { id: 'no-gelatin',    label: 'Sans gélatine animale' }
+  ];
+
+  function onbChip(opts) {
+    const active = opts.active;
+    return el('button', {
+      type: 'button',
+      class: 'onb-chip' + (active ? ' is-active' : ''),
+      dataset: { value: opts.value },
+      onclick: opts.onClick
+    }, [
+      opts.icon ? el('i', { 'data-lucide': opts.icon, class: 'onb-chip__icon' }) : null,
+      el('span', { class: 'onb-chip__label' }, opts.label)
+    ]);
+  }
+
+  function onbStepContent(rerender) {
+    const s = getOnbState();
+    const d = s.data;
+
+    if (s.step === 0) {
+      return [
+        el('span', { class: 'overline onb__step-tag' }, '· OBJECTIFS DE SANTÉ ·'),
+        el('h1', { class: 'onb__title' }, 'Qu\'est-ce que tu cherches à améliorer ?'),
+        el('p', { class: 'onb__sub' }, 'Sélectionne 1 ou plusieurs catégories. On personnalisera tes recommandations à partir de ces réponses.'),
+        el('div', { class: 'onb__chips' },
+          ONB_GOALS.map(function (g) {
+            return onbChip({
+              value: g.id,
+              label: g.label,
+              icon: g.icon,
+              active: d.goals.indexOf(g.id) !== -1,
+              onClick: function () {
+                const i = d.goals.indexOf(g.id);
+                if (i === -1) d.goals.push(g.id);
+                else d.goals.splice(i, 1);
+                rerender();
+              }
+            });
+          })
+        )
+      ];
+    }
+    if (s.step === 1) {
+      return [
+        el('span', { class: 'overline onb__step-tag' }, '· PROFIL ·'),
+        el('h1', { class: 'onb__title' }, 'Tu es ?'),
+        el('p', { class: 'onb__sub' }, 'Nécessaire pour ajuster les RDA — les apports recommandés varient sensiblement entre femme et homme adultes.'),
+        el('div', { class: 'onb__cards' },
+          ONB_GENDERS.map(function (g, i) {
+            return el('button', {
+              type: 'button',
+              class: 'onb-card' + (d.gender === g.id ? ' is-active' : ''),
+              onclick: function () { d.gender = g.id; rerender(); }
+            }, [
+              el('span', { class: 'overline mono onb-card__num' }, '· 0' + (i + 1) + ' ·'),
+              el('span', { class: 'onb-card__label' }, g.label)
+            ]);
+          })
+        )
+      ];
+    }
+    if (s.step === 2) {
+      return [
+        el('span', { class: 'overline onb__step-tag' }, '· TRANCHE D\'ÂGE ·'),
+        el('h1', { class: 'onb__title' }, 'Quel âge as-tu ?'),
+        el('p', { class: 'onb__sub' }, "Les besoins évoluent : la vitamine D devient critique après 50 ans, le magnésium plus tôt. On adapte."),
+        el('div', { class: 'onb__cards onb__cards--lg' },
+          ONB_AGES.map(function (a, i) {
+            return el('button', {
+              type: 'button',
+              class: 'onb-card' + (d.ageRange === a.id ? ' is-active' : ''),
+              onclick: function () { d.ageRange = a.id; rerender(); }
+            }, [
+              el('span', { class: 'overline mono onb-card__num' }, '· 0' + (i + 1) + ' ·'),
+              el('span', { class: 'onb-card__label' }, a.label)
+            ]);
+          })
+        )
+      ];
+    }
+    // Step 4: Budget + allergens
+    return [
+      el('span', { class: 'overline onb__step-tag' }, '· BUDGET & CONTRAINTES ·'),
+      el('h1', { class: 'onb__title' }, 'Tes contraintes pratiques.'),
+      el('p', { class: 'onb__sub' }, 'On filtrera les recommandations selon ton budget et tes restrictions. Tu pourras tout modifier plus tard.'),
+
+      el('div', { class: 'onb__field' }, [
+        el('span', { class: 'overline' }, '· BUDGET MENSUEL ·'),
+        el('div', { class: 'onb__slider-wrap' }, [
+          el('input', {
+            type: 'range',
+            min: '0',
+            max: '120',
+            step: '5',
+            value: String(d.budget),
+            class: 'onb__slider',
+            oninput: function (e) {
+              d.budget = parseInt(e.target.value, 10);
+              const out = document.querySelector('.onb__slider-value');
+              if (out) out.textContent = d.budget;
+            }
+          }),
+          el('div', { class: 'onb__slider-display' }, [
+            el('span', { class: 'onb__slider-value mono' }, String(d.budget)),
+            el('span', { class: 'onb__slider-unit mono' }, ' € / mois')
+          ])
+        ])
+      ]),
+
+      el('div', { class: 'onb__field' }, [
+        el('span', { class: 'overline' }, '· CONTRAINTES ALIMENTAIRES ·'),
+        el('p', { class: 'onb__field-hint' }, 'Optionnel — tu peux passer sans rien cocher.'),
+        el('div', { class: 'onb__chips onb__chips--sm' },
+          ONB_ALLERGENS.map(function (a) {
+            return onbChip({
+              value: a.id,
+              label: a.label,
+              active: d.allergens.indexOf(a.id) !== -1,
+              onClick: function () {
+                const i = d.allergens.indexOf(a.id);
+                if (i === -1) d.allergens.push(a.id);
+                else d.allergens.splice(i, 1);
+                rerender();
+              }
+            });
+          })
+        )
+      ])
+    ];
+  }
+
+  function isStepValid() {
+    const s = getOnbState();
+    if (s.step === 0) return s.data.goals.length > 0;
+    if (s.step === 1) return s.data.gender !== null;
+    if (s.step === 2) return s.data.ageRange !== null;
+    if (s.step === 3) return true;
+    return false;
+  }
+
+  async function submitOnboarding() {
+    const s = getOnbState();
+    const payload = {
+      health_goals: s.data.goals,
+      gender: s.data.gender,
+      age_range: s.data.ageRange,
+      monthly_budget_eur: s.data.budget,
+      allergens: s.data.allergens
+    };
+    const res = await skUpdateProfile(payload);
+    return res;
+  }
+
+  function renderOnboarding() {
+    const wrap = el('section', { class: 'onb' });
+
+    function rerender() {
+      wrap.innerHTML = '';
+      wrap.appendChild(buildOnbContent());
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    }
+
+    function buildOnbContent() {
+      const s = getOnbState();
+      const total = 4;
+      const pct = ((s.step + 1) / total) * 100;
+      const isLast = s.step === total - 1;
+      const canContinue = isStepValid();
+
+      const inner = el('div', { class: 'onb__inner' }, [
+        el('header', { class: 'onb__header' }, [
+          el('a', { href: '#home', class: 'skynova-mark' }, [
+            el('span', { class: 'skynova-mark__word' }, 'skynova'),
+            el('span', { class: 'skynova-mark__dot', 'aria-hidden': 'true' })
+          ]),
+          el('div', { class: 'onb__progress-text mono' }, [
+            el('span', { class: 'onb__progress-num' }, 'Étape ' + String(s.step + 1).padStart(2, '0')),
+            el('span', { class: 'onb__progress-total' }, ' / 04')
+          ]),
+          el('a', { href: '#lab', class: 'onb__skip mono' }, 'Plus tard →')
+        ]),
+
+        el('div', { class: 'onb__progress' }, [
+          el('div', { class: 'onb__progress-bar', style: { width: pct + '%' } })
+        ]),
+
+        el('main', { class: 'onb__step' }, onbStepContent(rerender)),
+
+        el('footer', { class: 'onb__nav' }, [
+          el('button', {
+            type: 'button',
+            class: 'cta cta--secondary onb__back',
+            disabled: s.step === 0 ? 'disabled' : null,
+            onclick: function () {
+              if (s.step > 0) {
+                s.step--;
+                rerender();
+              }
+            }
+          }, '← Précédent'),
+
+          el('button', {
+            type: 'button',
+            class: 'cta cta--primary onb__next',
+            disabled: canContinue ? null : 'disabled',
+            onclick: async function (e) {
+              if (!canContinue) return;
+              if (isLast) {
+                const btn = e.currentTarget;
+                btn.disabled = true;
+                btn.textContent = 'Sauvegarde…';
+                const res = await submitOnboarding();
+                if (res.error) {
+                  btn.disabled = false;
+                  btn.textContent = '× Erreur — réessayer';
+                  return;
+                }
+                btn.textContent = '✓ Profil créé';
+                setTimeout(function () {
+                  resetOnb();
+                  window.location.hash = 'lab';
+                }, 600);
+              } else {
+                s.step++;
+                rerender();
+              }
+            }
+          }, isLast ? '✓ Terminer mon profil' : 'Continuer →')
+        ])
+      ]);
+      return inner;
+    }
+
+    wrap.appendChild(buildOnbContent());
+    return wrap;
+  }
+
   /* ---------- Renderers ---------- */
   const RENDERERS = {
     home:         renderHome,
@@ -1355,8 +1883,8 @@
     categories:   renderCategories,
     manifesto:    renderManifesto,
     pricing:      renderPricing,
-    auth:         () => stub('Auth',         'Login + Signup — Phase 7.'),
-    onboarding:   () => stub('Onboarding',   'Modal 4 etapes — Phase 7.'),
+    auth:         renderAuth,
+    onboarding:   renderOnboarding,
     lab:          () => stub('Mon Lab',      'Dashboard personnel — Phase 8.'),
     scan:         () => stub('Scan',         'Cadre laser anime — Phase 8.'),
     search:       () => stub('Recherche',    'Exploration BDD — Phase 9.'),
