@@ -311,11 +311,206 @@
     ]);
   }
 
+  /* ---------- Phase 4 — Demo interactive ---------- */
+  const DEMO_PRODUCTS = {
+    whey: {
+      id: 'whey',
+      brand: 'Nutripure',
+      name: 'Whey Native Isolat',
+      mark: 'WHE',
+      refNum: '042',
+      spec: '900 G · 25 G/DOSE',
+      pills: [
+        { label: 'Sport',       tone: 'lime' },
+        { label: 'Performance', tone: '' }
+      ],
+      price: '39,90 €',
+      pricePerDose: '1,11 € / dose',
+      efficacy: 92,
+      priceScore: 76,
+      alternatives: [
+        { brand: 'MyProtein',   name: 'Impact Whey Isolate', price: '32,90 €', score: 84, mark: 'MYP', tone: 'lime' },
+        { brand: 'Nutrimuscle', name: 'Whey Isolate Native', price: '44,50 €', score: 88, mark: 'NTM', tone: 'lime' },
+        { brand: 'Bulk',        name: 'Whey Isolate 90',     price: '29,90 €', score: 79, mark: 'BLK', tone: 'mercury' }
+      ]
+    },
+    melatonine: {
+      id: 'melatonine',
+      brand: 'Apyforme',
+      name: 'Mélatonine 1,9 mg',
+      mark: 'MLT',
+      refNum: '118',
+      spec: '60 GÉL · 1,9 MG',
+      pills: [
+        { label: 'Sommeil', tone: 'mercury' },
+        { label: 'Stress',  tone: '' }
+      ],
+      price: '14,90 €',
+      pricePerDose: '0,25 € / dose',
+      efficacy: 84,
+      priceScore: 88,
+      alternatives: [
+        { brand: 'Nutrimea', name: 'Mélatonine Bio 1,9', price: '12,90 €', score: 81, mark: 'NMA', tone: 'mercury' },
+        { brand: 'D-Lab',    name: 'Mélatonine Pure',    price: '19,90 €', score: 86, mark: 'DLB', tone: 'lime' },
+        { brand: 'Solgar',   name: 'Melatonin 1 mg',     price: '16,50 €', score: 78, mark: 'SLG', tone: 'mercury' }
+      ]
+    },
+    probiotique: {
+      id: 'probiotique',
+      brand: 'D-Lab',
+      name: 'Probio Daily 10M UFC',
+      mark: 'PRB',
+      refNum: '203',
+      spec: '30 GÉL · 10 SOUCHES',
+      pills: [
+        { label: 'Digestion',  tone: 'lime' },
+        { label: 'Microbiote', tone: '' }
+      ],
+      price: '34,90 €',
+      pricePerDose: '1,16 € / dose',
+      efficacy: 86,
+      priceScore: 64,
+      alternatives: [
+        { brand: 'Nutripure',     name: 'Probio Daily 10M', price: '27,90 €', score: 82, mark: 'NTP', tone: 'lime' },
+        { brand: 'Lab Lescuyer',  name: 'Probiotiques 5M',  price: '22,50 €', score: 74, mark: 'LSC', tone: 'amber' },
+        { brand: 'Apyforme',      name: 'Microflore +',     price: '24,90 €', score: 79, mark: 'APY', tone: 'mercury' }
+      ]
+    }
+  };
+
+  function altCard(alt) {
+    return el('article', { class: 'alt-card' }, [
+      el('div', { class: 'alt-card__image' }, [
+        el('span', { class: 'alt-card__mark mono' }, alt.mark)
+      ]),
+      el('div', { class: 'alt-card__body' }, [
+        el('span', { class: 'overline alt-card__brand' }, '· ' + alt.brand + ' ·'),
+        el('h4', { class: 'alt-card__name' }, alt.name),
+        el('div', { class: 'alt-card__bottom' }, [
+          el('span', { class: 'alt-card__price mono' }, alt.price),
+          el('span', { class: 'alt-card__score alt-card__score--' + (alt.tone || 'lime') }, [
+            el('span', { class: 'alt-card__score-num mono' }, String(alt.score)),
+            el('span', { class: 'alt-card__score-suffix mono' }, '/100')
+          ])
+        ])
+      ])
+    ]);
+  }
+
+  function buildDemoPanelInner(p) {
+    return el('div', { class: 'demo__panel-inner' }, [
+      el('div', { class: 'demo__product' }, [
+        el('div', { class: 'demo__product-image' }, [
+          el('div', { class: 'demo__product-image-top' }, [
+            el('span', { class: 'mono demo__image-tag' }, 'REF · SKY-' + p.refNum),
+            el('span', { class: 'mono demo__image-tag demo__image-tag--live' }, [
+              el('span', { class: 'demo__live-dot', 'aria-hidden': 'true' }),
+              'LIVE'
+            ])
+          ]),
+          el('div', { class: 'demo__product-mark mono', 'aria-hidden': 'true' }, p.mark),
+          el('div', { class: 'demo__product-image-bottom' }, [
+            el('span', { class: 'mono demo__image-tag' }, p.spec),
+            el('span', { class: 'mono demo__image-tag' }, 'SCAN OK')
+          ])
+        ]),
+        el('div', { class: 'demo__product-body' }, [
+          el('span', { class: 'overline demo__product-brand' }, '· ' + p.brand + ' ·'),
+          el('h3', { class: 'demo__product-name' }, p.name),
+          el('div', { class: 'demo__product-pills' },
+            p.pills.map(function (pi) {
+              return el('span', { class: 'pill' + (pi.tone ? ' pill--' + pi.tone : '') }, pi.label);
+            })
+          ),
+          el('div', { class: 'demo__product-price-row' }, [
+            el('span', { class: 'demo__product-price mono' }, p.price),
+            el('span', { class: 'demo__product-price-per mono' }, p.pricePerDose)
+          ]),
+          el('div', { class: 'demo__gauges' }, [
+            gaugeBlock('Efficacité', p.efficacy,  'lime',     80),
+            gaugeBlock('Prix',        p.priceScore, 'mercury', 220)
+          ])
+        ])
+      ]),
+      el('div', { class: 'demo__alternatives' }, [
+        el('span', { class: 'overline demo__alt-title' }, '· 3 ALTERNATIVES RECOMMANDÉES ·'),
+        el('div', { class: 'demo__alt-grid' }, p.alternatives.map(altCard))
+      ])
+    ]);
+  }
+
+  function switchBtn(id, label, icon, active) {
+    return el('button', {
+      class: 'demo-switch' + (active ? ' is-active' : ''),
+      type: 'button',
+      dataset: { product: id }
+    }, [
+      el('i', { 'data-lucide': icon, class: 'demo-switch__icon' }),
+      el('span', { class: 'demo-switch__label' }, label)
+    ]);
+  }
+
+  function switchDemoProduct(panel, switcher, newId) {
+    if (panel.dataset.current === newId) return;
+    if (panel.classList.contains('is-loading')) return;
+    panel.classList.add('is-loading');
+    setTimeout(function () {
+      panel.innerHTML = '';
+      panel.appendChild(buildDemoPanelInner(DEMO_PRODUCTS[newId]));
+      panel.dataset.current = newId;
+      panel.classList.remove('is-loading');
+      switcher.querySelectorAll('.demo-switch').forEach(function (b) {
+        b.classList.toggle('is-active', b.dataset.product === newId);
+      });
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+    }, 150);
+  }
+
+  function demoSection() {
+    const section = el('section', { class: 'demo' });
+
+    section.appendChild(
+      el('header', { class: 'demo__header' }, [
+        el('span', { class: 'overline' }, '· DÉMO LIVE ·'),
+        el('h2', { class: 'demo__title' }, [
+          'Une fiche, ',
+          el('span', { class: 'demo__title-lime' }, 'en 3 secondes.')
+        ]),
+        el('p', { class: 'demo__sub' }, 'Clique sur un produit ci-dessous pour voir comment Skynova le décode en temps réel.')
+      ])
+    );
+
+    const panel = el('div', { class: 'demo__panel', dataset: { current: 'whey' } });
+    panel.appendChild(buildDemoPanelInner(DEMO_PRODUCTS.whey));
+    section.appendChild(panel);
+
+    const switcher = el('div', { class: 'demo__switcher' }, [
+      el('span', { class: 'overline demo__switcher-label' }, '· ESSAYE UN AUTRE PRODUIT ·'),
+      el('div', { class: 'demo__switcher-buttons', role: 'tablist' }, [
+        switchBtn('whey',        'Whey',         'dumbbell', true),
+        switchBtn('melatonine',  'Mélatonine',   'moon',     false),
+        switchBtn('probiotique', 'Probiotiques', 'pill',     false)
+      ])
+    ]);
+
+    switcher.addEventListener('click', function (e) {
+      const btn = e.target.closest('.demo-switch');
+      if (!btn) return;
+      const id = btn.dataset.product;
+      if (!DEMO_PRODUCTS[id]) return;
+      switchDemoProduct(panel, switcher, id);
+    });
+
+    section.appendChild(switcher);
+    return section;
+  }
+
   function renderHome() {
     const frag = document.createDocumentFragment();
     frag.appendChild(heroSection());
     frag.appendChild(problemSection());
     frag.appendChild(howSection());
+    frag.appendChild(demoSection());
     return frag;
   }
 
