@@ -760,14 +760,601 @@
   }
   window.skynova.setupCountUp = setupCountUp;
 
+  /* =========================================================
+     Phase 6 — 5 pages publiques secondaires
+     ========================================================= */
+
+  /* ---------- Helper : page hero (commun aux 5 pages) ---------- */
+  function pageHero(opts) {
+    return el('section', { class: 'page-hero' }, [
+      el('div', { class: 'page-hero__inner' }, [
+        el('span', { class: 'overline page-hero__overline' }, opts.overline),
+        el('h1', { class: 'page-hero__title' }, opts.title),
+        opts.sub ? el('p', { class: 'page-hero__sub' }, opts.sub) : null,
+        opts.meta ? el('div', { class: 'page-hero__meta mono' }, opts.meta) : null
+      ])
+    ]);
+  }
+
+  /* ---------- Page : /methodologie ---------- */
+  const METHODO_DIMENSIONS = [
+    { tag: '01 · Dosage',         weight: 40, color: 'lime',
+      desc: "Le dosage du principe actif par dose, comparé à la quantité recommandée par l'EFSA et l'ANSES. Un produit sous-dosé n'agit pas, peu importe son prix." },
+    { tag: '02 · Pureté',         weight: 30, color: 'mercury',
+      desc: "Pourcentage de principe actif réel, moins une pénalité pour chaque additif controversé (dioxyde de titane, polysorbate 80, stéarate de magnésium en excès)." },
+    { tag: '03 · Certifications', weight: 20, color: 'amber',
+      desc: "Présence de certifications tierces vérifiables : ISO 22000, GMP, AB, Ecocert, Friend of the Sea. 5 points par certif jusqu'à 20." },
+    { tag: '04 · Traçabilité',    weight: 10, color: 'coral',
+      desc: "Origine du principe actif : 10 pts pour la France, 7 pts pour un pays UE, 4 pts ailleurs. Sans transparence sur la provenance, un produit ne peut pas être audité." }
+  ];
+
+  const METHODO_SOURCES = [
+    { name: 'EFSA',     desc: 'Autorité européenne de sécurité des aliments — apports nutritionnels de référence (RDA).' },
+    { name: 'ANSES',    desc: 'Agence française — valeurs nutritionnelles, alertes et avis sur les compléments.' },
+    { name: 'Synadiet', desc: 'Syndicat national des compléments alimentaires — données marché France.' },
+    { name: 'PubMed',   desc: 'Études cliniques peer-reviewed — pour chaque allégation de bénéfice mesurable.' },
+    { name: 'Cochrane', desc: 'Revues systématiques — pour départager les principes actifs sur-documentés.' }
+  ];
+
+  function methodoDimCard(d) {
+    return el('article', { class: 'methodo-dim' }, [
+      el('div', { class: 'methodo-dim__head' }, [
+        el('span', { class: 'overline mono methodo-dim__tag' }, '· ' + d.tag + ' ·'),
+        el('div', { class: 'methodo-dim__weight' }, [
+          el('span', { class: 'methodo-dim__weight-num mono methodo-dim__weight-num--' + d.color }, String(d.weight)),
+          el('span', { class: 'methodo-dim__weight-of mono' }, ' / 100')
+        ])
+      ]),
+      el('div', { class: 'methodo-dim__bar' }, [
+        el('div', { class: 'methodo-dim__bar-fill methodo-dim__bar-fill--' + d.color, style: { width: d.weight + '%' } })
+      ]),
+      el('p', { class: 'methodo-dim__desc' }, d.desc)
+    ]);
+  }
+
+  function renderMethodo() {
+    return el('article', { class: 'page-content methodo' }, [
+      pageHero({
+        overline: '· MÉTHODOLOGIE V1 · MMXXVI ·',
+        title: [
+          'Comment on calcule, ',
+          el('span', { class: 'page-hero__title-lime' }, 'exactement.')
+        ],
+        sub: "La méthodologie scientifique derrière chaque score Skynova. Reproductible, sourcée, ouverte aux critiques.",
+        meta: [
+          el('span', null, 'Version 1.4'),
+          el('span', null, '·'),
+          el('span', null, 'Mise à jour 03·05·2026'),
+          el('span', null, '·'),
+          el('span', null, 'Licence CC-BY 4.0')
+        ]
+      }),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline' }, '· PRINCIPE ·'),
+        el('h2', { class: 'page-h2' }, "Un score ne devrait jamais se discuter sur du flair."),
+        el('p', { class: 'page-prose' }, "Le marché des compléments alimentaires en France pèse 2,92 milliards d'euros en 2024. À ce niveau de chiffre d'affaires, l'absence d'un référentiel scientifique public est anormale. Chaque marque communique son propre récit qualité — \"premium\", \"laboratoire\", \"breveté\" — sans définition partagée."),
+        el('p', { class: 'page-prose' }, "Skynova publie une méthodologie unique, reproductible, et opposable. Chaque score publié peut être recalculé à partir des données ouvertes de la fiche produit. Si une marque conteste un score, elle peut nous écrire à methodo@skynova.fr en pointant précisément l'item qui pose problème. On corrige publiquement ou on argumente publiquement.")
+      ]),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline' }, "· SCORE D'EFFICACITÉ ·"),
+        el('h2', { class: 'page-h2' }, [
+          '4 dimensions. 100 points. ',
+          el('span', { class: 'page-h2-mute' }, 'Aucun arbitrage subjectif.')
+        ]),
+        el('p', { class: 'page-prose page-prose--lead' }, "Le score d'efficacité est la somme pondérée de 4 dimensions mesurables. Chaque dimension a un poids fixé une fois pour toutes."),
+        el('div', { class: 'methodo__dims' }, METHODO_DIMENSIONS.map(methodoDimCard))
+      ]),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline' }, '· SCORE PRIX ·'),
+        el('h2', { class: 'page-h2' }, "Le prix au gramme de principe actif, pas au pot."),
+        el('p', { class: 'page-prose' }, "Le score prix compare le coût au mg (ou g) de principe actif réel au prix médian de la catégorie. Un produit à 0,7× le prix médian obtient 100. Un produit à 1,0× obtient 50. À 1,5× ou plus, il obtient 0. Cette échelle linéaire écrase les écarts marketing : un \"premium\" qui sur-facture sa créatine 3× obtient zéro, point."),
+        el('div', { class: 'methodo__formula card' }, [
+          el('span', { class: 'overline' }, '· FORMULE ·'),
+          el('pre', { class: 'methodo__code mono' },
+            'score = max(0, min(100, round(125 − (ratio × 75))))\n' +
+            'avec ratio = (prix / mg_actif_total) / médiane_catégorie'
+          )
+        ])
+      ]),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline' }, '· SOURCES ·'),
+        el('h2', { class: 'page-h2' }, "Les autorités sur lesquelles on s'appuie."),
+        el('ul', { class: 'methodo__sources' },
+          METHODO_SOURCES.map(function (s) {
+            return el('li', { class: 'methodo__source' }, [
+              el('span', { class: 'methodo__source-name mono' }, s.name),
+              el('span', { class: 'methodo__source-desc' }, s.desc)
+            ]);
+          })
+        )
+      ]),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline overline--lime' }, '· LIMITES ASSUMÉES ·'),
+        el('h2', { class: 'page-h2' }, "Ce que Skynova ne mesure pas, et pourquoi."),
+        el('p', { class: 'page-prose' }, "On ne mesure pas le ressenti utilisateur en double-aveugle. On ne mesure pas l'effet placebo. On ne mesure pas la biodisponibilité réelle dans ton organisme (elle varie selon ton microbiote, ton âge, ton génotype). Notre score est une probabilité d'efficacité théorique, calculée sur des paramètres objectifs — il ne remplace pas un avis médical. Si tu prends un traitement, parle de ta supplémentation à ton médecin.")
+      ]),
+
+      el('section', { class: 'page-block page-block--cta' }, [
+        el('div', { class: 'page-cta-band' }, [
+          el('div', null, [
+            el('span', { class: 'overline mono' }, '· DÉSACCORD MÉTHODOLOGIQUE ? ·'),
+            el('h3', { class: 'page-cta-band__title' }, "Écris au lab."),
+            el('p', { class: 'page-cta-band__sub' }, "On répond à chaque mail argumenté en moins de 7 jours.")
+          ]),
+          el('a', { href: 'mailto:methodo@skynova.fr', class: 'cta cta--primary' }, 'methodo@skynova.fr')
+        ])
+      ])
+    ]);
+  }
+
+  /* ---------- Page : /decode (blog) ---------- */
+  const BLOG_ARTICLES = [
+    { slug: 'whey-89-vs-71',     featured: true,  category: 'Sport',       mark: 'WHE', tone: 'lime',
+      title: "Pourquoi ta whey 89/100 n'est pas forcément meilleure que celle à 71",
+      excerpt: "Le score d'efficacité raconte une histoire, le score prix en raconte une autre. On a décortiqué 8 whey best-sellers pour comprendre pourquoi la \"meilleure\" n'est presque jamais celle qu'on imagine.",
+      author: 'Skynova Lab', date: '14 mai 2026', readTime: 7 },
+    { slug: 'melatonine-france-2024',  category: 'Sommeil',    mark: 'MLT', tone: 'mercury',
+      title: "Mélatonine : la France triple la dose autorisée en 2024",
+      excerpt: "Jusqu'en 2023, le plafond était 1 mg. Depuis janvier 2024, c'est 1,9 mg sans prescription. Conséquences sur le marché et sur ton sommeil.",
+      author: 'Skynova Lab', date: '08 mai 2026', readTime: 5 },
+    { slug: 'collagene-marin-bovin',   category: 'Beauté',     mark: 'COL', tone: 'lime',
+      title: "Collagène marin vs bovin : l'enquête",
+      excerpt: "Type I, type II, peptides hydrolysés, poisson, bovin... On a comparé 14 références sur 5 critères. Le grand gagnant n'est pas le plus cher.",
+      author: 'Camille D.',  date: '02 mai 2026', readTime: 9 },
+    { slug: 'magnesium-bisglycinate',  category: 'Vitalité',   mark: 'MAG', tone: 'lime',
+      title: "Magnésium bisglycinate : pourquoi ce nom barbare est devenu marketing",
+      excerpt: "Bisglycinate, citrate, malate, oxyde... Tous les magnésiums ne se valent pas. Et certaines formes vendues 2× plus cher sont à peine mieux assimilées.",
+      author: 'Skynova Lab', date: '26 avril 2026', readTime: 6 },
+    { slug: 'probiotiques-souches',    category: 'Digestion',  mark: 'PRB', tone: 'amber',
+      title: "Probiotiques : 10 milliards d'UFC, mais lesquelles ?",
+      excerpt: "Le nombre d'UFC sur l'étiquette est devenu un argument commercial. La vraie question, c'est la diversité des souches et leur stabilité jusqu'à péremption.",
+      author: 'Skynova Lab', date: '19 avril 2026', readTime: 8 },
+    { slug: 'curcumine-piperine',      category: 'Articulaire', mark: 'CRC', tone: 'lime',
+      title: "Curcumine et pipérine : le couple qui marche vraiment",
+      excerpt: "Sans pipérine ou phytosomes, la curcumine est très peu biodisponible. Pourtant la moitié des produits vendus en pharmacie l'omettent. On nomme les coupables.",
+      author: 'Skynova Lab', date: '12 avril 2026', readTime: 5 },
+    { slug: 'vitamine-d-sous-dosage',  category: 'Vitalité',    mark: 'VTD', tone: 'amber',
+      title: "Vitamine D : la France sous-dose, ses voisins surdosent",
+      excerpt: "L'ANSES recommande 600 UI/jour. L'Allemagne va jusqu'à 2 000 UI sans prescription. Les pharmacies françaises vendent jusqu'à 100 000 UI en ampoule unique. Pourquoi cet écart ?",
+      author: 'Camille D.',  date: '05 avril 2026', readTime: 7 },
+    { slug: 'spiruline-fr-vs-cn',      category: 'Vitalité',    mark: 'SPI', tone: 'mercury',
+      title: "Spiruline française vs chinoise : 6 critères qui tranchent",
+      excerpt: "L'origine pèse 10 points sur 100 dans notre algorithme. Pour la spiruline, c'est presque la moitié du score. Voilà pourquoi.",
+      author: 'Skynova Lab', date: '28 mars 2026', readTime: 6 },
+    { slug: 'creatine-monohydrate',    category: 'Sport',       mark: 'CRE', tone: 'lime',
+      title: "Créatine monohydrate : tout le reste est marketing",
+      excerpt: "HCl, malate, éthyle-ester, kre-alkalyn... Toutes les variantes brevetées coûtent 3-5× plus cher. Aucune étude clinique n'a démontré leur supériorité. La pure monohydrate reste imbattable.",
+      author: 'Thomas B.',   date: '21 mars 2026', readTime: 4 },
+    { slug: 'ashwagandha-ksm66',       category: 'Sommeil',     mark: 'ASH', tone: 'mercury',
+      title: "Ashwagandha KSM-66 : pourquoi ce dosage est devenu la référence",
+      excerpt: "300 mg, 600 mg, 1 200 mg ? L'extrait KSM-66 standardise à 5% de withanolides — ce qui rend la comparaison entre marques enfin possible.",
+      author: 'Skynova Lab', date: '14 mars 2026', readTime: 6 }
+  ];
+
+  function articleCard(a, featured) {
+    return el('a', {
+      class: 'art-card' + (featured ? ' art-card--featured' : ''),
+      href: '#decode/' + a.slug
+    }, [
+      el('div', { class: 'art-card__image' }, [
+        el('span', { class: 'art-card__mark mono' }, a.mark),
+        el('span', { class: 'art-card__category overline mono' }, '· ' + a.category.toUpperCase() + ' ·')
+      ]),
+      el('div', { class: 'art-card__body' }, [
+        el('h3', { class: 'art-card__title' }, a.title),
+        el('p', { class: 'art-card__excerpt' }, a.excerpt),
+        el('div', { class: 'art-card__foot' }, [
+          el('span', { class: 'art-card__author mono' }, a.author),
+          el('span', { class: 'art-card__sep' }, '·'),
+          el('span', { class: 'art-card__date mono' }, a.date),
+          el('span', { class: 'art-card__sep' }, '·'),
+          el('span', { class: 'art-card__read mono' }, a.readTime + ' min')
+        ])
+      ])
+    ]);
+  }
+
+  function renderDecode() {
+    const featured = BLOG_ARTICLES.find(function (a) { return a.featured; });
+    const others = BLOG_ARTICLES.filter(function (a) { return !a.featured; });
+
+    return el('article', { class: 'page-content decode' }, [
+      pageHero({
+        overline: '· LE DECODE ·',
+        title: [
+          "L'observatoire des ",
+          el('span', { class: 'page-hero__title-lime' }, 'compléments.')
+        ],
+        sub: "10 enquêtes éditoriales sur ce qui se cache vraiment derrière les étiquettes. Mis à jour chaque semaine.",
+        meta: [
+          el('span', null, '10 articles publiés'),
+          el('span', null, '·'),
+          el('span', null, '1 nouveau par semaine'),
+          el('span', null, '·'),
+          el('span', null, 'Sans pub, sans sponso')
+        ]
+      }),
+
+      featured ? el('section', { class: 'page-block decode__featured-wrap' }, [
+        el('span', { class: 'overline' }, '· À LA UNE ·'),
+        articleCard(featured, true)
+      ]) : null,
+
+      el('section', { class: 'page-block decode__list-wrap' }, [
+        el('div', { class: 'decode__list-head' }, [
+          el('span', { class: 'overline' }, '· LE RESTE DU LAB ·'),
+          el('span', { class: 'overline mono' }, '· ' + others.length + ' ARTICLES ·')
+        ]),
+        el('div', { class: 'decode__grid' }, others.map(function (a) { return articleCard(a, false); }))
+      ])
+    ]);
+  }
+
+  /* ---------- Page : /categories (hub) ---------- */
+  const CATEGORIES_DETAIL = {
+    vitality:  { productCount: 462, avgScore: 78, avgPrice: '21 €',
+                 top: [
+                   { name: 'Magnésium Bisglycinate', brand: 'Nutripure',    score: 94 },
+                   { name: 'Vitamine C Liposomale',  brand: 'D-Lab',        score: 89 },
+                   { name: 'Spiruline Bio FR',       brand: 'Ballot-Flurin', score: 88 }
+                 ] },
+    sleep:     { productCount: 318, avgScore: 74, avgPrice: '19 €',
+                 top: [
+                   { name: 'Ashwagandha KSM-66',     brand: 'Nutripure',  score: 92 },
+                   { name: 'Mélatonine 1,9 mg',      brand: 'Apyforme',   score: 84 },
+                   { name: 'Valériane Standardisée', brand: 'Solgar',     score: 81 }
+                 ] },
+    digestion: { productCount: 244, avgScore: 71, avgPrice: '24 €',
+                 top: [
+                   { name: 'Probio Daily 10M',       brand: 'D-Lab',         score: 86 },
+                   { name: 'Psyllium Blond Bio',     brand: 'Nutrimea',      score: 83 },
+                   { name: 'Enzymes Digestives',     brand: 'Now Foods',     score: 79 }
+                 ] },
+    beauty:    { productCount: 287, avgScore: 69, avgPrice: '32 €',
+                 top: [
+                   { name: 'Collagène Marin Type I', brand: 'Apyforme',   score: 92 },
+                   { name: 'Biotine 10 000 µg',      brand: 'Solgar',     score: 84 },
+                   { name: 'Acide Hyaluronique',     brand: 'D-Lab',      score: 81 }
+                 ] },
+    joints:    { productCount: 196, avgScore: 67, avgPrice: '27 €',
+                 top: [
+                   { name: 'Curcumine + Pipérine',   brand: 'Nutripure',  score: 90 },
+                   { name: 'Glucosamine 1500 mg',    brand: 'Yves Ponroy', score: 82 },
+                   { name: 'MSM Pur',                brand: 'Now Foods',  score: 78 }
+                 ] },
+    sport:     { productCount: 412, avgScore: 81, avgPrice: '34 €',
+                 top: [
+                   { name: 'Whey Native Isolat',     brand: 'Nutripure',   score: 92 },
+                   { name: 'Créatine Creapure',      brand: 'Nutrimuscle', score: 95 },
+                   { name: 'BCAA 2:1:1',             brand: 'MyProtein',   score: 84 }
+                 ] },
+    targeted:  { productCount: 281, avgScore: 73, avgPrice: '23 €',
+                 top: [
+                   { name: 'Oméga-3 EPA/DHA',        brand: 'Nutripure',   score: 91 },
+                   { name: 'Ginkgo Biloba 6000',     brand: 'Solgar',      score: 83 },
+                   { name: 'Lutéine 20 mg',          brand: 'Now Foods',   score: 79 }
+                 ] }
+  };
+
+  function catHubCard(cat) {
+    const d = CATEGORIES_DETAIL[cat.id] || {};
+    return el('article', { class: 'cat-hub-card', dataset: { cat: cat.id } }, [
+      el('header', { class: 'cat-hub-card__head' }, [
+        el('div', { class: 'cat-hub-card__icon' }, [ el('i', { 'data-lucide': cat.icon }) ]),
+        el('div', null, [
+          el('span', { class: 'overline cat-hub-card__share-tag' }, '· ' + cat.share + ' du marché FR ·'),
+          el('h3', { class: 'cat-hub-card__name' }, cat.name)
+        ])
+      ]),
+      el('p', { class: 'cat-hub-card__desc' }, cat.desc),
+      el('div', { class: 'cat-hub-card__stats' }, [
+        el('div', { class: 'cat-hub-card__stat' }, [
+          el('span', { class: 'cat-hub-card__stat-val mono' }, String(d.productCount || '—')),
+          el('span', { class: 'overline cat-hub-card__stat-lbl' }, 'références')
+        ]),
+        el('div', { class: 'cat-hub-card__stat' }, [
+          el('span', { class: 'cat-hub-card__stat-val mono cat-hub-card__stat-val--lime' }, String(d.avgScore || '—')),
+          el('span', { class: 'overline cat-hub-card__stat-lbl' }, 'score moyen')
+        ]),
+        el('div', { class: 'cat-hub-card__stat' }, [
+          el('span', { class: 'cat-hub-card__stat-val mono' }, d.avgPrice || '—'),
+          el('span', { class: 'overline cat-hub-card__stat-lbl' }, 'prix moyen')
+        ])
+      ]),
+      el('div', { class: 'cat-hub-card__top' }, [
+        el('span', { class: 'overline cat-hub-card__top-label' }, '· TOP 3 ACTUEL ·'),
+        el('ul', { class: 'cat-hub-card__top-list' },
+          (d.top || []).map(function (p, i) {
+            return el('li', { class: 'cat-hub-card__top-item' }, [
+              el('span', { class: 'cat-hub-card__top-rank mono' }, '0' + (i + 1)),
+              el('span', { class: 'cat-hub-card__top-name' }, [
+                p.name,
+                el('span', { class: 'cat-hub-card__top-brand' }, ' · ' + p.brand)
+              ]),
+              el('span', { class: 'cat-hub-card__top-score mono' }, String(p.score))
+            ]);
+          })
+        )
+      ]),
+      el('a', { href: '#search', class: 'cat-hub-card__cta cta cta--secondary' }, 'Explorer →')
+    ]);
+  }
+
+  function renderCategories() {
+    return el('article', { class: 'page-content cat-hub' }, [
+      pageHero({
+        overline: '· 7 UNIVERS COUVERTS ·',
+        title: [
+          "L'intégralité du marché français, ",
+          el('span', { class: 'page-hero__title-lime' }, 'décodé.')
+        ],
+        sub: '2 200 références analysées sur les 7 grandes familles de compléments alimentaires vendus en pharmacie, parapharmacie et boutiques spécialisées.',
+        meta: [
+          el('span', null, '2 200 références'),
+          el('span', null, '·'),
+          el('span', null, '78 marques'),
+          el('span', null, '·'),
+          el('span', null, 'Mise à jour quotidienne')
+        ]
+      }),
+      el('section', { class: 'page-block' }, [
+        el('div', { class: 'cat-hub__grid' }, CATEGORIES.map(catHubCard))
+      ])
+    ]);
+  }
+
+  /* ---------- Page : /manifesto ---------- */
+  const MANIFESTO_COMMITMENTS = [
+    { num: '01',
+      title: "L'indépendance financière absolue.",
+      body: "Skynova ne touche aucune commission qui influence un score. Notre revenu vient des abonnements payés par les utilisateurs et, plus tard, des données B2B agrégées vendues aux marques — sans jamais ajuster un score en échange. Si une marque nous propose de l'argent contre un meilleur classement, le mail est publié sur Le Decode. C'est arrivé deux fois en 2025." },
+    { num: '02',
+      title: "La transparence radicale des sources.",
+      body: "Chaque score Skynova doit être recalculable à partir des données ouvertes de la fiche produit. La formule est publique. Le code de l'algorithme sera open-source en Q3 2026 sous licence MIT. Si tu trouves une erreur, on la corrige publiquement en moins de 7 jours." },
+    { num: '03',
+      title: "Le refus du flou réglementaire.",
+      body: "Quand un produit n'affiche pas son dosage exact, son origine, ses certifications, on le note. On ne devine pas, on ne complète pas avec du marketing. Si l'industriel ne dit pas, l'utilisateur saura qu'il ne dit pas — et le score en tient compte." },
+    { num: '04',
+      title: "La rigueur scientifique, pas le marketing.",
+      body: "On s'appuie sur l'EFSA, l'ANSES, PubMed et Cochrane. Pas sur la communication marque. Si une allégation n'a pas d'étude clinique en double-aveugle derrière, elle ne pèse pas dans le score. Le \"laboratoire\" gravé sur le pot, c'est juste typographique." },
+    { num: '05',
+      title: "L'utilisateur d'abord, l'industriel jamais.",
+      body: "Les données utilisateurs ne sont jamais vendues. Les marques peuvent acheter des insights anonymisés agrégés à l'échelle du marché — pas des comportements individuels. Tu peux exporter ou supprimer ton compte en un clic, sans email de relance. C'est le contrat." }
+  ];
+
+  function manifestoItem(c) {
+    return el('article', { class: 'manifesto-item' }, [
+      el('div', { class: 'manifesto-item__num mono', 'aria-hidden': 'true' }, c.num),
+      el('div', { class: 'manifesto-item__body' }, [
+        el('h2', { class: 'manifesto-item__title' }, c.title),
+        el('p', { class: 'manifesto-item__text' }, c.body)
+      ])
+    ]);
+  }
+
+  function renderManifesto() {
+    return el('article', { class: 'page-content manifesto' }, [
+      pageHero({
+        overline: '· MANIFESTO · MMXXVI ·',
+        title: [
+          'Notre engagement, ',
+          el('span', { class: 'page-hero__title-lime' }, 'en 5 points.')
+        ],
+        sub: "Ce qu'on signe quand on lance Skynova. Si un jour on dévie de l'un de ces 5 engagements, écris-nous. On répond et on corrige.",
+        meta: [
+          el('span', null, 'Signé par les 4 fondateurs'),
+          el('span', null, '·'),
+          el('span', null, 'Paris · 03·05·2026')
+        ]
+      }),
+      el('section', { class: 'page-block manifesto__list' },
+        MANIFESTO_COMMITMENTS.map(manifestoItem)
+      ),
+      el('section', { class: 'page-block page-block--cta' }, [
+        el('div', { class: 'page-cta-band' }, [
+          el('div', null, [
+            el('span', { class: 'overline mono' }, '· TU VEUX VÉRIFIER ·'),
+            el('h3', { class: 'page-cta-band__title' }, "Lis la méthodologie complète."),
+            el('p', { class: 'page-cta-band__sub' }, "Sources, formules, limites assumées. Tout est public.")
+          ]),
+          el('a', { href: '#methodologie', class: 'cta cta--primary' }, 'Voir la méthodo →')
+        ])
+      ])
+    ]);
+  }
+
+  /* ---------- Page : /pricing ---------- */
+  const PRICING_PLANS = [
+    { tag: 'Découverte', name: 'Free', price: '0 €', priceSuffix: '/ pour toujours',
+      pitch: 'Pour comprendre ce que tu prends. Sans engagement, sans CB.',
+      features: [
+        'Scan illimité par code-barres',
+        "Score d'efficacité + score prix",
+        '1 alternative recommandée par produit',
+        'Accès aux 7 catégories',
+        '20 derniers scans en mémoire'
+      ],
+      cta: 'Commencer gratuit', ctaHref: '#auth', highlight: false },
+    { tag: 'Reco illimitées', name: 'Premium', price: '3,99 €', priceSuffix: '/ mois · ou 39 €/an',
+      pitch: 'Pour économiser réellement à chaque achat.',
+      features: [
+        'Tout Free, sans aucune limite',
+        'Alternatives illimitées par produit',
+        'Alertes prix sur tes favoris',
+        'Comparateur multi-produits',
+        'Historique de scans sur 12 mois',
+        'Export PDF de ton stack'
+      ],
+      cta: 'Essayer 7 jours offerts', ctaHref: '#auth', highlight: true, badge: '· LE PLUS POPULAIRE ·' },
+    { tag: 'Pour les marques', name: 'Pro', price: '299 €', priceSuffix: '/ mois · facturation annuelle',
+      pitch: "Pour les marques qui veulent comprendre leur position sur leur marché.",
+      features: [
+        'Dashboard Brand Insights complet',
+        'Benchmark anonymisé vs concurrents',
+        'Score de tes propres produits en avant-première',
+        'API d\'accès aux données catégorie',
+        'Support dédié + onboarding sur-mesure',
+        'Rapport mensuel signé Skynova Lab'
+      ],
+      cta: 'Demander une démo', ctaHref: 'mailto:b2b@skynova.fr', highlight: false }
+  ];
+
+  const PRICING_COMPARISON = [
+    { feature: 'Scans illimités',                    free: true,  premium: true,  pro: true },
+    { feature: "Score d'efficacité + score prix",    free: true,  premium: true,  pro: true },
+    { feature: 'Alternatives recommandées',          free: '1',   premium: 'Illimité', pro: 'Illimité' },
+    { feature: 'Alertes prix sur favoris',           free: false, premium: true,  pro: true },
+    { feature: 'Comparateur multi-produits',         free: false, premium: true,  pro: true },
+    { feature: 'Historique scans',                   free: '20',  premium: '12 mois', pro: 'Permanent' },
+    { feature: 'Export PDF du stack',                free: false, premium: true,  pro: true },
+    { feature: 'Brand Insights B2B',                 free: false, premium: false, pro: true },
+    { feature: 'API + rapport mensuel signé Lab',    free: false, premium: false, pro: true }
+  ];
+
+  const FAQ_ITEMS = [
+    { q: "Pourquoi seulement 3,99 €/mois pour Premium ?",
+      a: "Parce qu'on calcule 250 000 scores par mois pour environ 0,40 € de coût serveur. Le reste paie l'équipe (4 personnes) et la maintenance des sources. On a fait le choix d'un prix accessible plutôt que d'un freemium artificiel." },
+    { q: "Vous touchez des commissions sur les produits recommandés ?",
+      a: "On a des liens d'affiliation Amazon, Nutripure et MyProtein qui rapportent ~7% sur les clics achat. Cette commission n'affecte aucun score — l'algorithme tourne avant qu'on calcule l'affiliation. C'est documenté ligne par ligne dans la méthodologie." },
+    { q: "Comment je résilie mon abonnement Premium ?",
+      a: "Settings > Abonnement > Résilier. Un seul clic, pas de mail de relance, pas de chat agent qui te garde 20 minutes. Tu gardes l'accès jusqu'à la fin de ta période payée. C'est dans le manifesto." },
+    { q: "Mes données sont vendues ?",
+      a: "Non, jamais à l'échelle individuelle. Pour le plan Pro B2B, on vend des agrégats anonymisés à l'échelle catégorie (ex. \"le panier moyen ashwagandha en 2026 est de 24 €\"). Tu peux exporter ou supprimer ton compte à tout moment." },
+    { q: "Skynova fonctionne hors de France ?",
+      a: "Pour l'instant le scoring est calibré sur le marché français (prix médians, certifications EFSA/ANSES, taxes). On lance Belgique, Suisse et Espagne en Q4 2026. UK et Allemagne en 2027." },
+    { q: "Je suis professionnel de santé, vous avez un programme ?",
+      a: "Oui — Skynova Pro Santé : 0 €/mois pour les pharmaciens, naturopathes et médecins certifiés, avec accès aux comparateurs et à la méthodologie détaillée. Justificatif demandé. Écris à pro@skynova.fr." }
+  ];
+
+  function pricingFullCard(p) {
+    const cls = 'price-card price-card--full' + (p.highlight ? ' price-card--lime' : '');
+    return el('article', { class: cls }, [
+      p.badge ? el('span', { class: 'price-card__badge overline mono' }, p.badge) : null,
+      el('header', { class: 'price-card__head' }, [
+        el('span', { class: 'overline price-card__tag' }, '· ' + p.tag + ' ·'),
+        el('h3', { class: 'price-card__name' }, p.name)
+      ]),
+      el('div', { class: 'price-card__price-row' }, [
+        el('span', { class: 'price-card__price mono' }, p.price),
+        el('span', { class: 'price-card__price-suffix mono' }, p.priceSuffix)
+      ]),
+      el('p', { class: 'price-card__pitch' }, p.pitch),
+      el('ul', { class: 'price-card__features' },
+        p.features.map(function (f) {
+          return el('li', { class: 'price-card__feature' }, [
+            el('span', { class: 'price-card__check mono', 'aria-hidden': 'true' }, '+'),
+            el('span', null, f)
+          ]);
+        })
+      ),
+      el('a', {
+        href: p.ctaHref,
+        class: 'cta cta--block ' + (p.highlight ? 'cta--primary' : 'cta--secondary')
+      }, p.cta)
+    ]);
+  }
+
+  function comparisonCell(v) {
+    if (v === true)  return el('span', { class: 'cmp-cell cmp-cell--yes mono' }, '+');
+    if (v === false) return el('span', { class: 'cmp-cell cmp-cell--no mono'  }, '—');
+    return el('span', { class: 'cmp-cell mono' }, String(v));
+  }
+
+  function faqItem(item, idx) {
+    return el('details', { class: 'faq-item', open: idx === 0 ? '' : null }, [
+      el('summary', { class: 'faq-item__q' }, [
+        el('span', { class: 'faq-item__num mono' }, '0' + (idx + 1)),
+        el('span', { class: 'faq-item__q-text' }, item.q),
+        el('span', { class: 'faq-item__icon', 'aria-hidden': 'true' }, '+')
+      ]),
+      el('p', { class: 'faq-item__a' }, item.a)
+    ]);
+  }
+
+  function renderPricing() {
+    return el('article', { class: 'page-content pricing-page' }, [
+      pageHero({
+        overline: '· PRICING ·',
+        title: [
+          '3 plans. ',
+          el('span', { class: 'page-hero__title-lime' }, "Aucun engagement.")
+        ],
+        sub: "Free pour comprendre. Premium pour économiser. Pro pour les marques. Tout est résiliable en 1 clic.",
+        meta: [
+          el('span', null, 'Sans CB pour Free'),
+          el('span', null, '·'),
+          el('span', null, '7 jours offerts Premium'),
+          el('span', null, '·'),
+          el('span', null, 'Tarifs TTC')
+        ]
+      }),
+
+      el('section', { class: 'page-block' }, [
+        el('div', { class: 'pricing-page__cards' }, PRICING_PLANS.map(pricingFullCard))
+      ]),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline' }, '· COMPARATIF DÉTAILLÉ ·'),
+        el('h2', { class: 'page-h2' }, 'Tout ce que tu obtiens, ligne par ligne.'),
+        el('div', { class: 'cmp-wrap' }, [
+          el('table', { class: 'cmp-table' }, [
+            el('thead', null, [
+              el('tr', null, [
+                el('th', { class: 'cmp-th cmp-th--feature' }, 'Fonctionnalité'),
+                el('th', { class: 'cmp-th' }, 'Free'),
+                el('th', { class: 'cmp-th cmp-th--lime' }, 'Premium'),
+                el('th', { class: 'cmp-th' }, 'Pro')
+              ])
+            ]),
+            el('tbody', null,
+              PRICING_COMPARISON.map(function (row) {
+                return el('tr', null, [
+                  el('td', { class: 'cmp-td cmp-td--feature' }, row.feature),
+                  el('td', { class: 'cmp-td' }, [comparisonCell(row.free)]),
+                  el('td', { class: 'cmp-td cmp-td--lime' }, [comparisonCell(row.premium)]),
+                  el('td', { class: 'cmp-td' }, [comparisonCell(row.pro)])
+                ]);
+              })
+            )
+          ])
+        ])
+      ]),
+
+      el('section', { class: 'page-block' }, [
+        el('span', { class: 'overline' }, '· QUESTIONS LÉGITIMES ·'),
+        el('h2', { class: 'page-h2' }, [
+          'Ce que tout le monde nous demande, ',
+          el('span', { class: 'page-h2-mute' }, 'sans filtre.')
+        ]),
+        el('div', { class: 'faq-list' }, FAQ_ITEMS.map(faqItem))
+      ]),
+
+      el('section', { class: 'page-block page-block--cta' }, [
+        el('div', { class: 'page-cta-band' }, [
+          el('div', null, [
+            el('span', { class: 'overline mono' }, '· UN DOUTE ? ·'),
+            el('h3', { class: 'page-cta-band__title' }, "On répond en moins de 24h."),
+            el('p', { class: 'page-cta-band__sub' }, "support@skynova.fr · ou clique sur le chat.")
+          ]),
+          el('a', { href: 'mailto:support@skynova.fr', class: 'cta cta--primary' }, 'Nous écrire')
+        ])
+      ])
+    ]);
+  }
+
   /* ---------- Renderers ---------- */
   const RENDERERS = {
     home:         renderHome,
-    methodologie: () => stub('Methodologie', 'Page editoriale — Phase 6.'),
-    decode:       () => stub('Le Decode',    'Blog editorial — Phase 6.'),
-    categories:   () => stub('Categories',   'Hub des 7 univers — Phase 6.'),
-    manifesto:    () => stub('Manifesto',    'Manifeste de marque — Phase 6.'),
-    pricing:      () => stub('Pricing',      'Plans Free / Premium / Pro — Phase 6.'),
+    methodologie: renderMethodo,
+    decode:       renderDecode,
+    categories:   renderCategories,
+    manifesto:    renderManifesto,
+    pricing:      renderPricing,
     auth:         () => stub('Auth',         'Login + Signup — Phase 7.'),
     onboarding:   () => stub('Onboarding',   'Modal 4 etapes — Phase 7.'),
     lab:          () => stub('Mon Lab',      'Dashboard personnel — Phase 8.'),
