@@ -1875,6 +1875,344 @@
     return wrap;
   }
 
+  /* =========================================================
+     Phase 8 — App core (layout + Mon Lab + Scan)
+     ========================================================= */
+
+  /* ---------- App layout (sidebar + tabbar) ---------- */
+  const APP_NAV_PRIMARY = [
+    { id: 'lab',    label: 'Mon Lab',     hash: '#lab',    icon: 'layout-dashboard' },
+    { id: 'scan',   label: 'Scan',        hash: '#scan',   icon: 'scan-line' },
+    { id: 'search', label: 'Recherche',   hash: '#search', icon: 'search' }
+  ];
+  const APP_NAV_SECONDARY = [
+    { id: 'decode',       label: 'Le Decode',   hash: '#decode',       icon: 'book-open' },
+    { id: 'methodologie', label: 'Méthodologie', hash: '#methodologie', icon: 'flask-conical' },
+    { id: 'pricing',      label: 'Pricing',     hash: '#pricing',      icon: 'sparkles' }
+  ];
+
+  function getDisplayName() {
+    try {
+      const raw = localStorage.getItem('skynova_demo_user');
+      if (raw) {
+        const u = JSON.parse(raw);
+        if (u && u.email) {
+          const local = String(u.email).split('@')[0];
+          return local ? (local.charAt(0).toUpperCase() + local.slice(1)) : 'Maximilien';
+        }
+      }
+    } catch (e) {}
+    return 'Maximilien';
+  }
+  function getInitial() {
+    return getDisplayName().charAt(0).toUpperCase();
+  }
+
+  function appNavItem(item, activeId, variant) {
+    return el('a', {
+      href: item.hash,
+      class: 'app-nav' + (variant === 'secondary' ? ' app-nav--secondary' : '') + (item.id === activeId ? ' is-active' : '')
+    }, [
+      el('i', { 'data-lucide': item.icon, class: 'app-nav__icon' }),
+      el('span', { class: 'app-nav__label' }, item.label),
+      item.id === activeId ? el('span', { class: 'app-nav__dot', 'aria-hidden': 'true' }) : null
+    ]);
+  }
+
+  function appSidebar(activeId) {
+    return el('aside', { class: 'app-sidebar', 'aria-label': 'Navigation application' }, [
+      el('div', { class: 'app-sidebar__top' }, [
+        el('a', { href: '#home', class: 'skynova-mark skynova-mark--lg' }, [
+          el('span', { class: 'skynova-mark__word' }, 'skynova'),
+          el('span', { class: 'skynova-mark__dot', 'aria-hidden': 'true' })
+        ]),
+        el('span', { class: 'overline mono app-sidebar__tag' }, '· LAB · v1.4 ·')
+      ]),
+
+      el('nav', { class: 'app-sidebar__nav' }, [
+        el('span', { class: 'overline app-sidebar__nav-label' }, '· APP ·'),
+        ...APP_NAV_PRIMARY.map(function (i) { return appNavItem(i, activeId, 'primary'); }),
+        el('div', { class: 'app-sidebar__sep' }),
+        el('span', { class: 'overline app-sidebar__nav-label' }, '· LAB ·'),
+        ...APP_NAV_SECONDARY.map(function (i) { return appNavItem(i, activeId, 'secondary'); })
+      ]),
+
+      el('div', { class: 'app-sidebar__bottom' }, [
+        el('div', { class: 'app-user' }, [
+          el('div', { class: 'app-user__avatar' }, getInitial()),
+          el('div', { class: 'app-user__info' }, [
+            el('span', { class: 'app-user__name' }, getDisplayName()),
+            el('span', { class: 'app-user__plan mono' }, 'FREE · LVL 1')
+          ])
+        ]),
+        el('a', { href: '#auth', class: 'app-sidebar__logout' }, [
+          el('i', { 'data-lucide': 'log-out', class: 'app-nav__icon' }),
+          el('span', null, 'Déconnexion')
+        ])
+      ])
+    ]);
+  }
+
+  function appTabbar(activeId) {
+    const tabs = [
+      { id: 'lab',    label: 'Lab',       hash: '#lab',    icon: 'layout-dashboard' },
+      { id: 'scan',   label: 'Scan',      hash: '#scan',   icon: 'scan-line',          big: true },
+      { id: 'search', label: 'Recherche', hash: '#search', icon: 'search' },
+      { id: 'home',   label: 'Accueil',   hash: '#home',   icon: 'home' }
+    ];
+    return el('nav', { class: 'app-tabbar', 'aria-label': 'Navigation mobile' },
+      tabs.map(function (t) {
+        return el('a', {
+          href: t.hash,
+          class: 'app-tab' + (t.big ? ' app-tab--big' : '') + (t.id === activeId ? ' is-active' : '')
+        }, [
+          el('span', { class: 'app-tab__icon' }, [ el('i', { 'data-lucide': t.icon }) ]),
+          el('span', { class: 'app-tab__label' }, t.label)
+        ]);
+      })
+    );
+  }
+
+  function appLayout(pageId, content) {
+    const wrap = el('section', { class: 'app-layout' });
+    wrap.appendChild(appSidebar(pageId));
+    wrap.appendChild(el('main', { class: 'app-main' }, content));
+    wrap.appendChild(appTabbar(pageId));
+    return wrap;
+  }
+
+  /* ---------- Demo data for Lab dashboard ---------- */
+  const DEMO_LAB = {
+    stats: [
+      { num: 23,  affix: '',     label: 'Scans réalisés',       sub: '+5 cette semaine', icon: 'scan-line', tone: 'lime'    },
+      { num: 156, affix: ' €',   label: 'Économies cumulées',   sub: 'depuis ton inscription', icon: 'banknote', tone: 'lime'    },
+      { num: 84,  affix: '/100', label: 'Score moyen du stack', sub: 'top 18 % France',  icon: 'gauge',     tone: 'mercury' },
+      { num: 7,   affix: ' j',   label: 'Série en cours',       sub: 'continue demain',  icon: 'flame',     tone: 'amber'   }
+    ],
+    recommendations: [
+      { brand: 'Nutripure', name: 'Magnésium Bisglycinate', score: 94, mark: 'MAG', tone: 'lime',    price: '22,90 €', because: 'Top de la catégorie Vitalité' },
+      { brand: 'D-Lab',     name: 'Probio Daily 10M',       score: 86, mark: 'PRB', tone: 'lime',    price: '27,90 €', because: 'Couvre ton objectif Digestion' },
+      { brand: 'Apyforme',  name: 'Mélatonine 1,9 mg',      score: 84, mark: 'MLT', tone: 'mercury', price: '14,90 €', because: 'Aligné sur ton objectif Sommeil' }
+    ],
+    challenge: {
+      week: '19',
+      title: 'Décode 3 magnésiums avant dimanche.',
+      description: 'Le magnésium est le supplément le plus consommé en France et le plus mal dosé. Compare 3 marques différentes — on te montre le gagnant.',
+      progress: 1,
+      total: 3,
+      reward: '+50 XP · Badge Magnésium Master'
+    },
+    recentScans: [
+      { brand: 'Nutripure',    name: 'Whey Native Isolat',  score: 92, mark: 'WHE', tone: 'lime',    date: 'il y a 2h' },
+      { brand: 'Apyforme',     name: 'Mélatonine 1,9 mg',   score: 84, mark: 'MLT', tone: 'mercury', date: 'hier · 21:42' },
+      { brand: 'D-Lab',        name: 'Collagène Marin',     score: 88, mark: 'COL', tone: 'lime',    date: 'lundi · 09:12' },
+      { brand: 'Nutrimuscle',  name: 'Créatine Creapure',   score: 95, mark: 'CRE', tone: 'lime',    date: '03·05 · 18:30' },
+      { brand: 'Solgar',       name: 'Vitamine D3 1000UI',  score: 71, mark: 'VTD', tone: 'amber',   date: '01·05 · 11:55' }
+    ]
+  };
+
+  function getTone(score) {
+    if (score >= 85) return 'lime';
+    if (score >= 70) return 'mercury';
+    if (score >= 50) return 'amber';
+    return 'coral';
+  }
+
+  /* ---------- Lab : sub-renderers ---------- */
+  function labStatCard(s) {
+    return el('article', { class: 'lab-stat' }, [
+      el('div', { class: 'lab-stat__head' }, [
+        el('span', { class: 'overline lab-stat__label' }, s.label),
+        el('div', { class: 'lab-stat__icon' }, [ el('i', { 'data-lucide': s.icon }) ])
+      ]),
+      el('div', { class: 'lab-stat__num-wrap' }, [
+        el('span', { class: 'lab-stat__num mono lab-stat__num--' + s.tone }, String(s.num)),
+        el('span', { class: 'lab-stat__affix mono' }, s.affix)
+      ]),
+      el('span', { class: 'lab-stat__sub mono' }, '· ' + s.sub)
+    ]);
+  }
+
+  function labRecoCard(r) {
+    return el('a', { href: '#product/' + (r.mark || '').toLowerCase(), class: 'reco-card' }, [
+      el('div', { class: 'reco-card__image' }, [
+        el('span', { class: 'reco-card__mark mono' }, r.mark)
+      ]),
+      el('div', { class: 'reco-card__body' }, [
+        el('span', { class: 'overline reco-card__brand' }, '· ' + r.brand + ' ·'),
+        el('h3', { class: 'reco-card__name' }, r.name),
+        el('p', { class: 'reco-card__because mono' }, '→ ' + r.because),
+        el('div', { class: 'reco-card__bottom' }, [
+          el('span', { class: 'reco-card__price mono' }, r.price),
+          el('span', { class: 'reco-card__score reco-card__score--' + r.tone + ' mono' }, [
+            String(r.score),
+            el('span', { class: 'reco-card__score-of' }, '/100')
+          ])
+        ])
+      ])
+    ]);
+  }
+
+  function labScanItem(s) {
+    return el('a', { href: '#product/' + (s.mark || '').toLowerCase(), class: 'scan-item' }, [
+      el('span', { class: 'scan-item__mark mono' }, s.mark),
+      el('div', { class: 'scan-item__body' }, [
+        el('span', { class: 'scan-item__brand mono' }, s.brand),
+        el('span', { class: 'scan-item__name' }, s.name)
+      ]),
+      el('span', { class: 'scan-item__score scan-item__score--' + s.tone + ' mono' }, String(s.score)),
+      el('span', { class: 'scan-item__date mono' }, s.date)
+    ]);
+  }
+
+  function renderLab() {
+    const d = DEMO_LAB;
+    const hour = new Date().getHours();
+    const greeting = hour < 6 ? 'Bonne nuit' : hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+
+    const content = el('div', { class: 'lab-page' }, [
+      el('header', { class: 'lab-page__head' }, [
+        el('div', null, [
+          el('span', { class: 'overline mono lab-page__date' }, '· ' + new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase() + ' ·'),
+          el('h1', { class: 'lab-page__title' }, [
+            greeting + ', ',
+            el('span', { class: 'lab-page__title-lime' }, getDisplayName() + '.')
+          ]),
+          el('p', { class: 'lab-page__sub' }, 'Ton tableau de bord scientifique — recommandations, défi de la semaine et derniers scans.')
+        ]),
+        el('a', { href: '#scan', class: 'cta cta--primary lab-page__cta' }, [
+          el('i', { 'data-lucide': 'scan-line', class: 'cta__icon' }),
+          el('span', null, 'Scanner un produit')
+        ])
+      ]),
+
+      el('section', { class: 'lab-section' }, [
+        el('div', { class: 'lab-stats-grid' }, d.stats.map(labStatCard))
+      ]),
+
+      el('section', { class: 'lab-section lab-section--challenge' }, [
+        el('article', { class: 'challenge-card' }, [
+          el('div', { class: 'challenge-card__body' }, [
+            el('span', { class: 'overline mono challenge-card__tag' }, '· DÉFI · SEMAINE ' + d.challenge.week + ' ·'),
+            el('h2', { class: 'challenge-card__title' }, d.challenge.title),
+            el('p', { class: 'challenge-card__desc' }, d.challenge.description),
+            el('div', { class: 'challenge-card__progress' }, [
+              el('div', { class: 'challenge-card__bar' }, [
+                el('div', { class: 'challenge-card__fill', style: { width: ((d.challenge.progress / d.challenge.total) * 100) + '%' } })
+              ]),
+              el('span', { class: 'challenge-card__progress-text mono' },
+                d.challenge.progress + ' / ' + d.challenge.total + ' produits décodés'
+              )
+            ]),
+            el('span', { class: 'challenge-card__reward mono' }, '· ' + d.challenge.reward + ' ·')
+          ]),
+          el('div', { class: 'challenge-card__action' }, [
+            el('a', { href: '#search', class: 'cta cta--primary' }, 'Démarrer le défi →')
+          ])
+        ])
+      ]),
+
+      el('section', { class: 'lab-section' }, [
+        el('header', { class: 'lab-section__head' }, [
+          el('span', { class: 'overline' }, '· RECOMMANDÉ POUR TOI ·'),
+          el('a', { href: '#search', class: 'lab-section__link mono' }, 'Voir tout →')
+        ]),
+        el('p', { class: 'lab-section__sub' }, 'Basé sur tes 3 objectifs d\'onboarding : Vitalité, Digestion, Sommeil.'),
+        el('div', { class: 'lab-recos-grid' }, d.recommendations.map(labRecoCard))
+      ]),
+
+      el('section', { class: 'lab-section' }, [
+        el('header', { class: 'lab-section__head' }, [
+          el('span', { class: 'overline' }, '· DERNIERS SCANS ·'),
+          el('a', { href: '#scan', class: 'lab-section__link mono' }, 'Tout l\'historique →')
+        ]),
+        el('div', { class: 'scan-list' }, d.recentScans.map(labScanItem))
+      ])
+    ]);
+    return appLayout('lab', content);
+  }
+
+  /* ---------- /scan ---------- */
+  function renderScan() {
+    const recent = DEMO_LAB.recentScans.slice(0, 3);
+
+    const content = el('div', { class: 'scan-page' }, [
+      el('header', { class: 'scan-page__head' }, [
+        el('span', { class: 'overline mono scan-page__tag' }, '· SCAN · LIVE ·'),
+        el('h1', { class: 'scan-page__title' }, [
+          'Pointe, scanne, ',
+          el('span', { class: 'scan-page__title-lime' }, 'décode.')
+        ]),
+        el('p', { class: 'scan-page__sub' }, "Code-barres EAN-13 ou photo de l'étiquette. Le résultat tombe en 3 secondes.")
+      ]),
+
+      el('div', { class: 'scan-frame-wrap' }, [
+        el('div', { class: 'scan-frame', 'aria-label': 'Cadre de scan' }, [
+          el('div', { class: 'scan-frame__grid', 'aria-hidden': 'true' }),
+          el('div', { class: 'scan-frame__corners', 'aria-hidden': 'true' }, [
+            el('span', { class: 'scan-frame__corner scan-frame__corner--tl' }),
+            el('span', { class: 'scan-frame__corner scan-frame__corner--tr' }),
+            el('span', { class: 'scan-frame__corner scan-frame__corner--bl' }),
+            el('span', { class: 'scan-frame__corner scan-frame__corner--br' })
+          ]),
+          el('div', { class: 'scan-frame__laser', 'aria-hidden': 'true' }),
+          el('div', { class: 'scan-frame__center' }, [
+            el('i', { 'data-lucide': 'scan-barcode', class: 'scan-frame__center-icon' }),
+            el('span', { class: 'scan-frame__center-text mono' }, 'Aligne le code-barres')
+          ]),
+          el('div', { class: 'scan-frame__hud' }, [
+            el('span', { class: 'mono' }, 'LASER · ON'),
+            el('span', { class: 'mono' }, 'ZOOM · 1.0X')
+          ])
+        ])
+      ]),
+
+      el('div', { class: 'scan-actions' }, [
+        el('button', { type: 'button', class: 'scan-action scan-action--primary' }, [
+          el('i', { 'data-lucide': 'camera', class: 'scan-action__icon' }),
+          el('div', { class: 'scan-action__body' }, [
+            el('span', { class: 'scan-action__label' }, 'Activer la caméra'),
+            el('span', { class: 'scan-action__hint mono' }, '· EAN-13 · QR ·')
+          ])
+        ]),
+        el('button', { type: 'button', class: 'scan-action' }, [
+          el('i', { 'data-lucide': 'image-up', class: 'scan-action__icon' }),
+          el('div', { class: 'scan-action__body' }, [
+            el('span', { class: 'scan-action__label' }, 'Importer une photo'),
+            el('span', { class: 'scan-action__hint mono' }, '· JPG · PNG · 5 Mo max ·')
+          ])
+        ]),
+        el('a', { href: '#search', class: 'scan-action' }, [
+          el('i', { 'data-lucide': 'search', class: 'scan-action__icon' }),
+          el('div', { class: 'scan-action__body' }, [
+            el('span', { class: 'scan-action__label' }, 'Recherche manuelle'),
+            el('span', { class: 'scan-action__hint mono' }, '· 2 200 références ·')
+          ])
+        ])
+      ]),
+
+      el('section', { class: 'scan-page__recent' }, [
+        el('header', { class: 'lab-section__head' }, [
+          el('span', { class: 'overline' }, '· DERNIERS SCANS ·'),
+          el('a', { href: '#lab', class: 'lab-section__link mono' }, 'Tout voir →')
+        ]),
+        el('div', { class: 'scan-list' }, recent.map(labScanItem))
+      ])
+    ]);
+    return appLayout('scan', content);
+  }
+
+  /* ---------- /search and /product : Phase 9 stubs wrapped in app shell ---------- */
+  function renderSearchStub() {
+    const content = stub('Recherche', 'Exploration BDD avec filtres avancés — Phase 9.');
+    return appLayout('search', content);
+  }
+  function renderProductStub(params) {
+    const id = (params && params[0]) || '—';
+    const content = stub('Fiche produit', "Fiche complète avec scores, alternatives et avis — Phase 9. ID : " + id);
+    return appLayout('product', content);
+  }
+
   /* ---------- Renderers ---------- */
   const RENDERERS = {
     home:         renderHome,
@@ -1885,10 +2223,10 @@
     pricing:      renderPricing,
     auth:         renderAuth,
     onboarding:   renderOnboarding,
-    lab:          () => stub('Mon Lab',      'Dashboard personnel — Phase 8.'),
-    scan:         () => stub('Scan',         'Cadre laser anime — Phase 8.'),
-    search:       () => stub('Recherche',    'Exploration BDD — Phase 9.'),
-    product:      (params) => stub('Fiche produit', 'Fiche complete — Phase 9. ID demande : ' + (params[0] || '—'))
+    lab:          renderLab,
+    scan:         renderScan,
+    search:       renderSearchStub,
+    product:      renderProductStub
   };
   window.skynova.renderers = RENDERERS;
 
