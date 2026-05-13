@@ -505,12 +505,216 @@
     return section;
   }
 
+  /* ---------- Phase 5 — Sections restantes de la landing ---------- */
+
+  /* ----- Categories ----- */
+  const CATEGORIES = [
+    { id: 'vitality',   name: 'Vitalité & immunité',     desc: 'Vitamines, magnésium, spiruline, échinacée. La base de tout.',   icon: 'zap',       share: '25 %' },
+    { id: 'sleep',      name: 'Sommeil & stress',         desc: 'Mélatonine, ashwagandha, valériane, GABA. Recharger la nuit.',   icon: 'moon',      share: '20 %' },
+    { id: 'digestion',  name: 'Digestion & transit',      desc: 'Probiotiques, psyllium, charbon, enzymes digestives.',           icon: 'leaf',      share: '15 %' },
+    { id: 'beauty',     name: 'Beauté & nutricosmétique', desc: 'Collagène, biotine, kératine, acide hyaluronique. Peau et cheveux.', icon: 'sparkles', share: '12 %' },
+    { id: 'joints',     name: 'Santé articulaire',        desc: 'Curcumine, glucosamine, chondroïtine, MSM, harpagophyte.',       icon: 'shield',    share: '10 %' },
+    { id: 'sport',      name: 'Sport & performance',      desc: 'Whey, créatine, BCAA, beta-alanine, caféine.',                   icon: 'dumbbell',  share: '8 %'  },
+    { id: 'targeted',   name: 'Santé ciblée',             desc: 'Ginkgo, lutéine, canneberge, oméga-3, vitamine D.',              icon: 'target',    share: '10 %' }
+  ];
+
+  function catCard(cat) {
+    return el('a', {
+      class: 'cat-card',
+      href: '#categories',
+      dataset: { cat: cat.id }
+    }, [
+      el('div', { class: 'cat-card__icon' }, [ el('i', { 'data-lucide': cat.icon }) ]),
+      el('div', { class: 'cat-card__body' }, [
+        el('h3', { class: 'cat-card__name' }, cat.name),
+        el('p', { class: 'cat-card__desc' }, cat.desc)
+      ]),
+      el('div', { class: 'cat-card__foot' }, [
+        el('span', { class: 'cat-card__share mono' }, cat.share),
+        el('span', { class: 'overline cat-card__share-label' }, 'du marché')
+      ])
+    ]);
+  }
+
+  function categoriesSection() {
+    return el('section', { class: 'categories' }, [
+      el('header', { class: 'categories__header' }, [
+        el('span', { class: 'overline' }, '· 7 UNIVERS COUVERTS ·'),
+        el('h2', { class: 'categories__title' }, [
+          'Tout ce que tu peux acheter, ',
+          el('span', { class: 'categories__title-lime' }, 'décodé.')
+        ]),
+        el('p', { class: 'categories__sub' }, '2 800 références couvrant les 7 grandes familles de compléments alimentaires vendus en France.')
+      ]),
+      el('div', { class: 'categories__grid' }, CATEGORIES.map(catCard))
+    ]);
+  }
+
+  /* ----- Temoignages ----- */
+  const TESTIMONIALS = [
+    {
+      quote: "J'achetais du collagène à 39 € depuis 3 ans sans rien y connaître. Skynova m'a montré que je payais pour un produit dosé à 60 % seulement, alors qu'une alternative à 28 € était dosée à 92 %. Switch fait.",
+      author: 'Léa M.',
+      role: 'Consommatrice · Lyon',
+      tag: 'BEAUTÉ · COLLAGÈNE'
+    },
+    {
+      quote: "Je prends de la whey depuis 6 ans, j'avais ma marque fétiche que je jugeais 'premium'. Score Skynova : 71. L'alternative qu'ils recommandent : 89, à 5 € de moins. La méthodologie est béton, je ne reviens pas en arrière.",
+      author: 'Thomas B.',
+      role: 'Coach sportif · Paris',
+      tag: 'SPORT · WHEY'
+    },
+    {
+      quote: "C'est enfin un outil qui sort les compléments du flou réglementaire. Sources citées, dosages comparés à la RDA, additifs identifiés. L'observatoire qui manquait au marché français.",
+      author: 'Dr. Camille D.',
+      role: 'Docteure en pharmacie · ENS Paris-Saclay',
+      tag: 'EXPERTISE · MÉTHODOLOGIE'
+    }
+  ];
+
+  function testimonialCard(t) {
+    return el('article', { class: 'testi-card' }, [
+      el('span', { class: 'overline testi-card__tag mono' }, '· ' + t.tag + ' ·'),
+      el('blockquote', { class: 'testi-card__quote serif' }, [
+        el('span', { class: 'testi-card__quote-mark', 'aria-hidden': 'true' }, '«'),
+        ' ' + t.quote + ' ',
+        el('span', { class: 'testi-card__quote-mark', 'aria-hidden': 'true' }, '»')
+      ]),
+      el('div', { class: 'testi-card__author' }, [
+        el('span', { class: 'testi-card__author-name' }, t.author),
+        el('span', { class: 'testi-card__author-role' }, t.role)
+      ])
+    ]);
+  }
+
+  function testimonialsSection() {
+    return el('section', { class: 'testi' }, [
+      el('header', { class: 'testi__header' }, [
+        el('span', { class: 'overline' }, '· ILS ONT ESSAYÉ ·'),
+        el('h2', { class: 'testi__title' }, [
+          'Trois switches, ',
+          el('span', { class: 'testi__title-lime' }, 'trois économies.')
+        ])
+      ]),
+      el('div', { class: 'testi__grid' }, TESTIMONIALS.map(testimonialCard))
+    ]);
+  }
+
+  /* ----- Pricing teaser ----- */
+  function pricingCard(opts) {
+    const cls = 'price-card' + (opts.highlight ? ' price-card--lime' : '');
+    return el('article', { class: cls }, [
+      opts.highlight ? el('span', { class: 'price-card__badge overline mono' }, '· LE PLUS POPULAIRE ·') : null,
+      el('header', { class: 'price-card__head' }, [
+        el('span', { class: 'overline price-card__tag' }, '· ' + opts.tag + ' ·'),
+        el('h3', { class: 'price-card__name' }, opts.name)
+      ]),
+      el('div', { class: 'price-card__price-row' }, [
+        el('span', { class: 'price-card__price mono' }, opts.price),
+        opts.priceSuffix ? el('span', { class: 'price-card__price-suffix mono' }, opts.priceSuffix) : null
+      ]),
+      el('p', { class: 'price-card__pitch' }, opts.pitch),
+      el('ul', { class: 'price-card__features' },
+        opts.features.map(function (f) {
+          return el('li', { class: 'price-card__feature' }, [
+            el('span', { class: 'price-card__check mono', 'aria-hidden': 'true' }, '+'),
+            el('span', null, f)
+          ]);
+        })
+      ),
+      el('a', {
+        href: '#auth',
+        class: 'cta cta--block ' + (opts.highlight ? 'cta--primary' : 'cta--secondary')
+      }, opts.ctaLabel)
+    ]);
+  }
+
+  function pricingTeaserSection() {
+    return el('section', { class: 'pricing-teaser' }, [
+      el('header', { class: 'pricing-teaser__header' }, [
+        el('span', { class: 'overline' }, '· PRICING ·'),
+        el('h2', { class: 'pricing-teaser__title' }, [
+          'Gratuit pour scanner. ',
+          el('span', { class: 'pricing-teaser__title-lime' }, '3,99 € pour switcher.')
+        ]),
+        el('p', { class: 'pricing-teaser__sub' }, 'Plus de la moitié de nos utilisateurs économisent leur abonnement en moins d\'un mois.')
+      ]),
+      el('div', { class: 'pricing-teaser__grid' }, [
+        pricingCard({
+          tag: 'Découverte',
+          name: 'Free',
+          price: '0 €',
+          priceSuffix: '/ pour toujours',
+          pitch: 'Pour comprendre ce que tu prends sans engagement.',
+          features: [
+            'Scan illimité par code-barres',
+            'Score d\'efficacité et score prix',
+            '1 alternative recommandée par produit',
+            'Accès aux 7 catégories'
+          ],
+          ctaLabel: 'Commencer gratuit',
+          highlight: false
+        }),
+        pricingCard({
+          tag: 'Reco illimitées',
+          name: 'Premium',
+          price: '3,99 €',
+          priceSuffix: '/ mois · ou 39 €/an',
+          pitch: 'Pour économiser réellement à chaque achat.',
+          features: [
+            'Tout Free, sans aucune limite',
+            'Alternatives illimitées par produit',
+            'Alertes prix sur tes favoris',
+            'Comparateur multi-produits',
+            'Historique de scans sur 12 mois'
+          ],
+          ctaLabel: 'Essayer 7 jours offerts',
+          highlight: true
+        })
+      ]),
+      el('div', { class: 'pricing-teaser__foot' }, [
+        el('a', { class: 'pricing-teaser__link', href: '#pricing' }, 'Voir tous les plans →')
+      ])
+    ]);
+  }
+
+  /* ----- CTA finale ----- */
+  function ctaFinalSection() {
+    return el('section', { class: 'cta-final' }, [
+      el('div', { class: 'cta-final__inner' }, [
+        el('span', { class: 'overline cta-final__overline mono' }, '· EN 3 SECONDES ·'),
+        el('h2', { class: 'cta-final__title' }, [
+          'Le prochain complément ',
+          el('br'),
+          'que tu achèteras ',
+          el('span', { class: 'cta-final__title-italic serif' }, 'sera le bon.')
+        ]),
+        el('p', { class: 'cta-final__sub' }, 'Rejoins les 12 000 personnes qui ont déjà repris le contrôle de leur supplémentation.'),
+        el('div', { class: 'cta-final__buttons' }, [
+          el('a', { href: '#auth',   class: 'cta cta--dark'     }, 'Commencer gratuit'),
+          el('a', { href: '#decode', class: 'cta cta--dark-alt' }, 'Lire le manifesto →')
+        ]),
+        el('div', { class: 'cta-final__meta mono' }, [
+          el('span', null, 'Sans CB · Sans pub'),
+          el('span', null, '·'),
+          el('span', null, 'Annulation en 1 clic'),
+          el('span', null, '·'),
+          el('span', null, 'Made in France')
+        ])
+      ])
+    ]);
+  }
+
   function renderHome() {
     const frag = document.createDocumentFragment();
     frag.appendChild(heroSection());
     frag.appendChild(problemSection());
     frag.appendChild(howSection());
     frag.appendChild(demoSection());
+    frag.appendChild(categoriesSection());
+    frag.appendChild(testimonialsSection());
+    frag.appendChild(pricingTeaserSection());
+    frag.appendChild(ctaFinalSection());
     return frag;
   }
 
