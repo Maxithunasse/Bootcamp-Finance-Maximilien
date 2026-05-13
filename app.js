@@ -166,7 +166,7 @@
     ]);
   }
 
-  function renderHome() {
+  function heroSection() {
     return el('section', { class: 'hero' }, [
       el('div', { class: 'hero__container' }, [
         el('div', { class: 'hero__left' }, [
@@ -195,6 +195,111 @@
       ])
     ]);
   }
+
+  /* ---------- Phase 2 — Section "Le probleme" + stats ---------- */
+  function statCard(opts) {
+    const card = el('article', {
+      class: 'stat-card',
+      dataset: {
+        count: String(opts.value),
+        prefix: opts.prefix || '',
+        suffix: opts.suffix || ''
+      }
+    }, [
+      el('div', { class: 'stat-card__num-wrap' }, [
+        opts.prefix ? el('span', { class: 'stat-card__num-affix mono' }, opts.prefix) : null,
+        el('span', { class: 'stat-card__num stat-card__num-value mono' }, '0'),
+        opts.suffix ? el('span', { class: 'stat-card__num-affix mono' }, opts.suffix) : null
+      ]),
+      el('span', { class: 'overline stat-card__tag' }, opts.overline),
+      el('p', { class: 'stat-card__label' }, opts.label),
+      el('span', { class: 'stat-card__src mono' }, opts.source)
+    ]);
+    return card;
+  }
+
+  function problemSection() {
+    return el('section', { class: 'problem' }, [
+      el('div', { class: 'problem__container' }, [
+        el('header', { class: 'problem__header' }, [
+          el('span', { class: 'overline' }, '· LE PROBLÈME ·'),
+          el('h2', { class: 'problem__title' }, [
+            el('span', { class: 'problem__title-line' }, "L'industrie pèse 2,92 milliards d'euros. "),
+            el('span', { class: 'problem__title-line problem__title-mute' }, "90% des consommateurs ne savent pas lire une étiquette.")
+          ])
+        ]),
+        el('div', { class: 'problem__stats' }, [
+          statCard({
+            value: 61, suffix: ' %',
+            overline: '· Marché ·',
+            label: 'des Français consomment des compléments alimentaires au moins une fois par an.',
+            source: 'Synadiet 2024'
+          }),
+          statCard({
+            value: 90, suffix: ' %',
+            overline: '· Lecture ·',
+            label: "ne savent pas évaluer la qualité réelle d'un produit qu'ils achètent en pharmacie.",
+            source: 'Enquête CLCV'
+          }),
+          statCard({
+            value: 212, suffix: ' €',
+            overline: '· Budget ·',
+            label: 'dépensés en moyenne chaque année et par foyer en compléments alimentaires.',
+            source: 'Xerfi · Marché FR 2024'
+          })
+        ])
+      ])
+    ]);
+  }
+
+  function renderHome() {
+    const frag = document.createDocumentFragment();
+    frag.appendChild(heroSection());
+    frag.appendChild(problemSection());
+    return frag;
+  }
+
+  /* ---------- Count-up animation (scroll-into-view) ---------- */
+  function setupCountUp(root) {
+    const targets = root.querySelectorAll('[data-count]');
+    if (!targets.length) return;
+
+    const animate = (host) => {
+      const target = parseFloat(host.dataset.count);
+      const prefix = host.dataset.prefix || '';
+      const suffix = host.dataset.suffix || '';
+      const numEl = host.querySelector('.stat-card__num-value');
+      if (!numEl) return;
+      const duration = 1400;
+      const start = performance.now();
+      function tick(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const current = Math.round(target * eased);
+        numEl.textContent = String(current);
+        if (t < 1) requestAnimationFrame(tick);
+        else numEl.textContent = String(Math.round(target));
+        // prefix/suffix are siblings (rendered separately), no need to touch them here
+        void prefix; void suffix;
+      }
+      requestAnimationFrame(tick);
+    };
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animate(entry.target);
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.35, rootMargin: '0px 0px -10% 0px' });
+      targets.forEach((t) => io.observe(t));
+    } else {
+      targets.forEach(animate);
+    }
+  }
+  window.skynova.setupCountUp = setupCountUp;
 
   /* ---------- Renderers ---------- */
   const RENDERERS = {
@@ -229,6 +334,8 @@
     app.innerHTML = '';
     app.appendChild(renderer(params));
     app.classList.add('anim-fade-in');
+
+    setupCountUp(app);
 
     document.querySelectorAll('.site-nav__link, .mobile-drawer__link').forEach(a => {
       const href = a.getAttribute('href') || '';
