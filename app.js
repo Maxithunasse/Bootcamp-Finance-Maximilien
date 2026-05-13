@@ -74,9 +74,131 @@
     return wrap;
   }
 
-  /* ---------- Renderers (stubs Phase 0) ---------- */
+  /* ---------- Phase 1 — Hero (landing) ---------- */
+
+  // SVG gauge avec stroke-dasharray anime via CSS (800ms ease-out).
+  function renderGauge(value, opts) {
+    opts = opts || {};
+    const size   = opts.size  || 80;
+    const stroke = opts.stroke || 6;
+    const tone   = opts.tone  || 'lime';
+    const delay  = opts.delay || 0;
+    const v = Math.max(0, Math.min(100, value));
+    const r = (size - stroke) / 2;
+    const c = 2 * Math.PI * r;
+    const target = c * (1 - v / 100);
+
+    const wrap = el('div', {
+      class: 'gauge gauge--' + tone,
+      style: { width: size + 'px', height: size + 'px' },
+      role: 'img',
+      'aria-label': 'Score ' + Math.round(v) + ' sur 100'
+    });
+    wrap.style.setProperty('--gauge-c', c);
+    wrap.style.setProperty('--gauge-target', target);
+    wrap.style.setProperty('--gauge-delay', delay + 'ms');
+
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + size + ' ' + size);
+    svg.setAttribute('width', size);
+    svg.setAttribute('height', size);
+    svg.setAttribute('class', 'gauge__svg');
+    svg.setAttribute('aria-hidden', 'true');
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const track = document.createElementNS(NS, 'circle');
+    track.setAttribute('cx', cx); track.setAttribute('cy', cy); track.setAttribute('r', r);
+    track.setAttribute('class', 'gauge__track');
+    const progress = document.createElementNS(NS, 'circle');
+    progress.setAttribute('cx', cx); progress.setAttribute('cy', cy); progress.setAttribute('r', r);
+    progress.setAttribute('class', 'gauge__progress');
+
+    svg.appendChild(track);
+    svg.appendChild(progress);
+    wrap.appendChild(svg);
+    wrap.appendChild(
+      el('div', { class: 'gauge__center' }, [
+        el('span', { class: 'gauge__num' }, String(Math.round(v)))
+      ])
+    );
+    return wrap;
+  }
+  window.skynova.renderGauge = renderGauge;
+
+  function gaugeBlock(label, value, tone, delay) {
+    return el('div', { class: 'gauge-block' }, [
+      el('span', { class: 'overline gauge-block__label' }, label),
+      renderGauge(value, { size: 80, tone: tone, delay: delay })
+    ]);
+  }
+
+  function renderHeroMockup() {
+    return el('article', { class: 'hero-card', 'aria-label': 'Exemple de fiche produit decodee' }, [
+      el('div', { class: 'hero-card__image' }, [
+        el('div', { class: 'hero-card__image-top' }, [
+          el('span', { class: 'mono hero-card__image-tag' }, 'REF · SKY-001'),
+          el('span', { class: 'mono hero-card__image-tag' }, '03 · 05 · 26')
+        ]),
+        el('div', { class: 'hero-card__mark', 'aria-hidden': 'true' }, 'ASH'),
+        el('div', { class: 'hero-card__image-bottom' }, [
+          el('span', { class: 'mono hero-card__image-tag' }, '600 MG · KSM-66'),
+          el('span', { class: 'mono hero-card__image-tag' }, '60 GÉL')
+        ])
+      ]),
+      el('div', { class: 'hero-card__body' }, [
+        el('span', { class: 'overline hero-card__brand' }, '· Nutripure ·'),
+        el('h3', { class: 'hero-card__name' }, 'Ashwagandha KSM-66'),
+        el('div', { class: 'hero-card__pills' }, [
+          el('span', { class: 'pill pill--mercury' }, 'Sommeil'),
+          el('span', { class: 'pill' }, 'Stress')
+        ]),
+        el('div', { class: 'hero-card__price-row' }, [
+          el('span', { class: 'hero-card__price' }, '29,90 €'),
+          el('span', { class: 'hero-card__servings' }, '0,49 € / dose')
+        ]),
+        el('div', { class: 'hero-card__gauges' }, [
+          gaugeBlock('Efficacité', 89, 'lime',    500),
+          gaugeBlock('Prix',        71, 'mercury', 650)
+        ])
+      ])
+    ]);
+  }
+
+  function renderHome() {
+    return el('section', { class: 'hero' }, [
+      el('div', { class: 'hero__container' }, [
+        el('div', { class: 'hero__left' }, [
+          el('span', { class: 'overline hero__overline' }, '· ENQUÊTE INDÉPENDANTE EN COURS ·'),
+          el('h1', { class: 'hero__title' }, [
+            el('span', { class: 'hero__title-line' }, 'Tu sais ce que tu achètes,'),
+            el('span', { class: 'hero__title-line hero__title-line--lime' }, 'vraiment ?')
+          ]),
+          el('p', { class: 'hero__sub' }, "Skynova décode 15 000 compléments alimentaires. Score d'efficacité, prix au gramme de principe actif, alternatives recommandées. En 3 secondes."),
+          el('div', { class: 'hero__ctas' }, [
+            el('a', { href: '#auth',   class: 'cta cta--primary'   }, 'Commencer gratuit'),
+            el('a', { href: '#search', class: 'cta cta--secondary' }, 'Voir un rapport →')
+          ]),
+          el('div', { class: 'hero__trust' }, [
+            el('span', { class: 'overline hero__trust-label' }, '· Mentionnés par ·'),
+            el('div', { class: 'hero__trust-logos' }, [
+              el('span', { class: 'hero__trust-logo hero__trust-logo--serif' }, 'Le Monde'),
+              el('span', { class: 'hero__trust-logo hero__trust-logo--bold'  }, 'Que Choisir'),
+              el('span', { class: 'hero__trust-logo hero__trust-logo--mono'  }, 'France Inter')
+            ])
+          ])
+        ]),
+        el('div', { class: 'hero__right' }, [
+          renderHeroMockup()
+        ])
+      ])
+    ]);
+  }
+
+  /* ---------- Renderers ---------- */
   const RENDERERS = {
-    home:         () => stub('Home',         'La landing arrive en Phase 1.'),
+    home:         renderHome,
     methodologie: () => stub('Methodologie', 'Page editoriale — Phase 6.'),
     decode:       () => stub('Le Decode',    'Blog editorial — Phase 6.'),
     categories:   () => stub('Categories',   'Hub des 7 univers — Phase 6.'),
