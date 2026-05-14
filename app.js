@@ -4053,6 +4053,7 @@
     setupCountUp(app);
     initCounters(app);
     initGauges(app);
+    initMagneticButtons(app);
 
     stopHeroCycle();
     if (pageId === 'home') {
@@ -4160,6 +4161,40 @@
   }
   window.skynova.initCounters = initCounters;
 
+  /* ---------- Premium · Mission 6 — Magnetic hover on primary CTAs ---------- */
+  function initMagneticButtons(root) {
+    root = root || document;
+    // Skip on touch-only devices (no real hover)
+    if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) return;
+
+    const buttons = root.querySelectorAll('.cta--primary, .scan-action--primary');
+
+    function clamp(v, max) {
+      return Math.max(-max, Math.min(max, v));
+    }
+
+    buttons.forEach(function (btn) {
+      if (btn.dataset.magnetic === 'true') return;
+      btn.dataset.magnetic = 'true';
+
+      const intensity = 0.3;
+      const maxX = 14;
+      const maxY = 8;
+
+      btn.addEventListener('mousemove', function (e) {
+        const rect = btn.getBoundingClientRect();
+        const x = clamp((e.clientX - rect.left - rect.width / 2) * intensity, maxX);
+        const y = clamp((e.clientY - rect.top - rect.height / 2) * intensity, maxY);
+        btn.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(1.02)';
+      });
+
+      btn.addEventListener('mouseleave', function () {
+        btn.style.transform = '';
+      });
+    });
+  }
+  window.skynova.initMagneticButtons = initMagneticButtons;
+
   /* ---------- Premium · Mission 2 — Scroll progress bar ---------- */
   function setupScrollProgress() {
     const bar = document.getElementById('scrollProgress');
@@ -4181,6 +4216,7 @@
     setupHeaderScroll();
     setupBurger();
     setupScrollProgress();
+    initMagneticButtons(document);
     route();
   }
   if (document.readyState === 'loading') {
