@@ -644,8 +644,8 @@ ul { list-style: none; }
   position: relative;
   z-index: 1;
 }
-/* (Removed) — Le gradient fade du hero a disparu : la continuité des filaments
-   Botanica à travers tout le viewport est désormais préférée. */
+/* (Removed) — Le gradient fade du hero a disparu : la continuité de l'animation
+   de fond à travers tout le viewport est désormais préférée. */
 
 /* Living lab · Mission 3 — Cursor trail lime */
 .cursor-trail {
