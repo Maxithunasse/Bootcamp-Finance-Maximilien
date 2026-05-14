@@ -555,6 +555,35 @@ ul { list-style: none; }
   margin: 0 auto;
   padding: 48px 20px 80px;
   position: relative;
+  overflow: hidden;
+}
+
+/* Lab network canvas (Mission 1 — particules moléculaires) */
+.lab-network {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.85;
+}
+/* Tous les autres enfants du hero passent au-dessus du canvas */
+.hero > *:not(.lab-network) {
+  position: relative;
+  z-index: 1;
+}
+/* Gradient fade en bas du hero pour faire disparaître les particules */
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: linear-gradient(to bottom, transparent 0%, var(--ink-pure) 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .hero__container {

@@ -274,6 +274,7 @@
 
   function heroSection() {
     return el('section', { class: 'hero' }, [
+      el('canvas', { id: 'lab-network', class: 'lab-network', 'aria-hidden': 'true' }),
       el('div', { class: 'hero__container' }, [
         el('div', { class: 'hero__left' }, [
           el('span', { class: 'overline hero__overline' }, '· ENQUÊTE INDÉPENDANTE EN COURS ·'),
@@ -4053,13 +4054,24 @@
       routeTransitionTimeout = null;
     }
 
+    // Destroy lab network if leaving home (canvas still in DOM here)
+    if (labNetworkInstance) {
+      labNetworkInstance.destroy();
+      labNetworkInstance = null;
+    }
+
     function finalize() {
       setupCountUp(app);
       initCounters(app);
       initGauges(app);
       initMagneticButtons(app);
 
-      if (pageId === 'home') setTimeout(startHeroCycle, 0);
+      if (pageId === 'home') {
+        setTimeout(startHeroCycle, 0);
+        setTimeout(function () {
+          labNetworkInstance = initLabNetwork();
+        }, 50);
+      }
 
       if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
 
@@ -4192,6 +4204,179 @@
     }
   }
   window.skynova.initCounters = initCounters;
+
+  /* ---------- Living lab · Mission 1 — Particle network canvas ---------- */
+  class LabNetwork {
+    constructor(canvas) {
+      this.canvas = canvas;
+      this.ctx = canvas.getContext('2d');
+      this.particles = [];
+      this.mouse = { x: -1000, y: -1000 };
+      this.config = this.getConfig();
+      if (!this.config.particleCount) return; // reduced motion
+      this.resize();
+      this.init();
+      this.bindEvents();
+      this.animate();
+    }
+
+    getConfig() {
+      const isMobile = window.innerWidth < 768;
+      const isReducedMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (isReducedMotion) return { particleCount: 0 };
+      return {
+        particleCount: isMobile ? 35 : 70,
+        maxDistance: isMobile ? 110 : 160,
+        maxSpeed: 0.4,
+        particleRadius: 1.8,
+        lineOpacity: 0.18,
+        particleOpacity: 0.7,
+        mouseInfluenceRadius: 180,
+        mouseRepelForce: 0.04
+      };
+    }
+
+    resize() {
+      const rect = this.canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      this.canvas.width = rect.width * dpr;
+      this.canvas.height = rect.height * dpr;
+      this.canvas.style.width = rect.width + 'px';
+      this.canvas.style.height = rect.height + 'px';
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0); // reset before scale
+      this.ctx.scale(dpr, dpr);
+      this.width = rect.width;
+      this.height = rect.height;
+    }
+
+    init() {
+      this.particles = [];
+      for (let i = 0; i < this.config.particleCount; i++) {
+        this.particles.push({
+          x: Math.random() * this.width,
+          y: Math.random() * this.height,
+          vx: (Math.random() - 0.5) * this.config.maxSpeed,
+          vy: (Math.random() - 0.5) * this.config.maxSpeed,
+          radius: this.config.particleRadius + Math.random() * 0.8
+        });
+      }
+    }
+
+    bindEvents() {
+      this.handleResize = () => { this.resize(); this.init(); };
+      window.addEventListener('resize', this.handleResize);
+
+      this.handleMouseMove = (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        this.mouse.x = e.clientX - rect.left;
+        this.mouse.y = e.clientY - rect.top;
+      };
+      this.handleMouseLeave = () => {
+        this.mouse.x = -1000;
+        this.mouse.y = -1000;
+      };
+      const parent = this.canvas.parentElement;
+      if (parent) {
+        parent.addEventListener('mousemove', this.handleMouseMove);
+        parent.addEventListener('mouseleave', this.handleMouseLeave);
+      }
+    }
+
+    update() {
+      this.particles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > this.width) p.vx *= -1;
+        if (p.y < 0 || p.y > this.height) p.vy *= -1;
+        p.x = Math.max(0, Math.min(this.width, p.x));
+        p.y = Math.max(0, Math.min(this.height, p.y));
+
+        const dx = p.x - this.mouse.x;
+        const dy = p.y - this.mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < this.config.mouseInfluenceRadius && dist > 0) {
+          const force = (1 - dist / this.config.mouseInfluenceRadius) * this.config.mouseRepelForce;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+        }
+
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        const maxSpeed = this.config.maxSpeed * 2;
+        if (speed > maxSpeed) {
+          p.vx = (p.vx / speed) * maxSpeed;
+          p.vy = (p.vy / speed) * maxSpeed;
+        }
+        p.vx *= 0.995;
+        p.vy *= 0.995;
+        if (Math.abs(p.vx) < 0.05) p.vx += (Math.random() - 0.5) * 0.1;
+        if (Math.abs(p.vy) < 0.05) p.vy += (Math.random() - 0.5) * 0.1;
+      });
+    }
+
+    draw() {
+      this.ctx.clearRect(0, 0, this.width, this.height);
+
+      for (let i = 0; i < this.particles.length; i++) {
+        for (let j = i + 1; j < this.particles.length; j++) {
+          const p1 = this.particles[i];
+          const p2 = this.particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < this.config.maxDistance) {
+            const opacity = (1 - dist / this.config.maxDistance) * this.config.lineOpacity;
+            this.ctx.strokeStyle = 'rgba(212, 255, 58, ' + opacity + ')';
+            this.ctx.lineWidth = 0.6;
+            this.ctx.beginPath();
+            this.ctx.moveTo(p1.x, p1.y);
+            this.ctx.lineTo(p2.x, p2.y);
+            this.ctx.stroke();
+          }
+        }
+      }
+
+      this.particles.forEach(p => {
+        const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 4);
+        gradient.addColorStop(0, 'rgba(212, 255, 58, ' + this.config.particleOpacity + ')');
+        gradient.addColorStop(0.4, 'rgba(212, 255, 58, 0.15)');
+        gradient.addColorStop(1, 'rgba(212, 255, 58, 0)');
+        this.ctx.fillStyle = gradient;
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.radius * 4, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.fillStyle = 'rgba(212, 255, 58, 0.95)';
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        this.ctx.fill();
+      });
+    }
+
+    animate() {
+      this.update();
+      this.draw();
+      this.rafId = requestAnimationFrame(() => this.animate());
+    }
+
+    destroy() {
+      if (this.rafId) cancelAnimationFrame(this.rafId);
+      if (this.handleResize) window.removeEventListener('resize', this.handleResize);
+      if (this.canvas && this.canvas.parentElement) {
+        if (this.handleMouseMove) this.canvas.parentElement.removeEventListener('mousemove', this.handleMouseMove);
+        if (this.handleMouseLeave) this.canvas.parentElement.removeEventListener('mouseleave', this.handleMouseLeave);
+      }
+    }
+  }
+
+  let labNetworkInstance = null;
+  function initLabNetwork() {
+    const canvas = document.getElementById('lab-network');
+    if (!canvas) return null;
+    return new LabNetwork(canvas);
+  }
+  window.skynova.LabNetwork = LabNetwork;
 
   /* ---------- Premium · Mission 6 — Magnetic hover on primary CTAs ---------- */
   function initMagneticButtons(root) {
