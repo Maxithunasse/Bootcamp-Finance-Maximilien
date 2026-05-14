@@ -616,28 +616,13 @@ ul { list-style: none; }
   overflow: hidden;
 }
 
-/* Topography canvas (scroll-driven contour lines, full viewport fixed) */
-.topography-canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  transition: clip-path 1200ms cubic-bezier(0.65, 0, 0.35, 1);
-}
-/* Tout le contenu principal reste au-dessus du canvas global.
-   Les éléments à z-index propre (header 100, sweep 9999, scroll-progress 10000,
-   ticker 90, live-activity 95, drawer 99) conservent leur stacking. */
+/* (Canvas background animation removed — replaced by editorial parallax images
+   in a future mission. The .app-shell / .site-footer z-index lift below remains
+   useful as a safety net for grain texture + sweep stacking.) */
 .app-shell,
 .site-footer {
   position: relative;
   z-index: 1;
-}
-/* Désactiver si reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  .topography-canvas { display: none; }
 }
 /* Tous les enfants du hero passent au-dessus du contenu local (cursor trail etc.) */
 .hero > * {
