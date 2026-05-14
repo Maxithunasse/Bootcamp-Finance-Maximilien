@@ -4513,6 +4513,72 @@
   }
   window.skynova.Botanica = Botanica;
 
+  /* ---------- Apothecary · Mission 5C — Custom cursor ---------- */
+  function initCustomCursor() {
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (document.querySelector('.custom-cursor')) return; // already initialized
+
+    const cursor = document.createElement('div');
+    cursor.className = 'custom-cursor';
+    cursor.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(cursor);
+
+    let mouseX = 0, mouseY = 0;
+    let cursorX = 0, cursorY = 0;
+    let active = false;
+
+    const HOVER_SELECTOR = 'a, button, .cta--primary, .cta--secondary, .cta--dark, .cta--dark-alt, ' +
+      '.card, .sp-card, .cat-card, .cat-hub-card, .reco-card, .alt-card, .alt-mini, .hero-card, ' +
+      '.scan-item, .testi-card, .price-card, .demo-switch, .scan-action, .faq-item__q, ' +
+      '.product-tabs__link, .auth__tab, .onb-chip, .onb-card, .sf-chip, .app-tab, .app-nav, ' +
+      '[data-cursor-hover]';
+
+    window.addEventListener('mousemove', function (e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      if (!active) {
+        cursorX = mouseX;
+        cursorY = mouseY;
+        cursor.style.opacity = '1';
+        active = true;
+      }
+    });
+
+    document.addEventListener('mouseleave', function () {
+      cursor.style.opacity = '0';
+      active = false;
+    });
+    document.addEventListener('mouseenter', function () {
+      if (mouseX || mouseY) cursor.style.opacity = '1';
+    });
+
+    // Hover detection via event delegation (mouseover/mouseout bubble, work for SPA re-renders)
+    document.addEventListener('mouseover', function (e) {
+      if (e.target.closest && e.target.closest(HOVER_SELECTOR)) {
+        cursor.classList.add('is-hover');
+      }
+    });
+    document.addEventListener('mouseout', function (e) {
+      if (e.target.closest && e.target.closest(HOVER_SELECTOR)) {
+        // Only remove if relatedTarget (where the mouse is going) isn't also a hover target
+        const goingTo = e.relatedTarget;
+        if (!goingTo || !(goingTo.closest && goingTo.closest(HOVER_SELECTOR))) {
+          cursor.classList.remove('is-hover');
+        }
+      }
+    });
+
+    function animate() {
+      cursorX += (mouseX - cursorX) * 0.2;
+      cursorY += (mouseY - cursorY) * 0.2;
+      cursor.style.transform = 'translate(' + cursorX + 'px, ' + cursorY + 'px) translate(-50%, -50%)';
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+  window.skynova.initCustomCursor = initCustomCursor;
+
   /* ---------- Living lab · Mission 3 — Cursor trail lime in hero ---------- */
   class CursorTrail {
     constructor(hero) {
@@ -4764,6 +4830,7 @@
     setupScrollProgress();
     initMagneticButtons(document);
     initBotanica();
+    initCustomCursor();
     route();
   }
   if (document.readyState === 'loading') {
