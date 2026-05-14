@@ -648,8 +648,8 @@ ul { list-style: none; }
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(92, 107, 47, 0.45) 0%,
-    rgba(92, 107, 47, 0.10) 45%,
+    rgba(31, 27, 22, 0.25) 0%,
+    rgba(31, 27, 22, 0.08) 45%,
     transparent 70%
   );
   filter: blur(2px);
@@ -657,7 +657,7 @@ ul { list-style: none; }
   opacity: 0;
   transition: opacity 300ms ease-out;
   z-index: 2;
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply;
   will-change: transform, opacity;
 }
 @media (hover: none), (max-width: 768px) {
@@ -5668,8 +5668,8 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
   inset: -20px;
   background: radial-gradient(
     circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(92, 107, 47, 0.45) 0%,
-    rgba(92, 107, 47, 0.15) 30%,
+    rgba(74, 85, 38, 0.35) 0%,
+    rgba(74, 85, 38, 0.12) 30%,
     transparent 60%
   );
   border-radius: inherit;
