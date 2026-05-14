@@ -586,6 +586,35 @@ ul { list-style: none; }
   z-index: 0;
 }
 
+/* Living lab · Mission 3 — Cursor trail lime */
+.cursor-trail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(212, 255, 58, 0.45) 0%,
+    rgba(212, 255, 58, 0.10) 45%,
+    transparent 70%
+  );
+  filter: blur(2px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+  z-index: 2;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+@media (hover: none), (max-width: 768px) {
+  .cursor-trail { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-trail { display: none; }
+}
+
 .hero__container {
   display: grid;
   grid-template-columns: 1fr;

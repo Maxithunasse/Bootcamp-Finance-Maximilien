@@ -4129,6 +4129,10 @@
       labNetworkInstance.destroy();
       labNetworkInstance = null;
     }
+    if (cursorTrailInstance) {
+      cursorTrailInstance.destroy();
+      cursorTrailInstance = null;
+    }
 
     function finalize() {
       setupCountUp(app);
@@ -4140,6 +4144,7 @@
         setTimeout(startHeroCycle, 0);
         setTimeout(function () {
           labNetworkInstance = initLabNetwork();
+          cursorTrailInstance = initCursorTrail();
         }, 50);
       }
 
@@ -4447,6 +4452,77 @@
     return new LabNetwork(canvas);
   }
   window.skynova.LabNetwork = LabNetwork;
+
+  /* ---------- Living lab · Mission 3 — Cursor trail lime in hero ---------- */
+  class CursorTrail {
+    constructor(hero) {
+      this.hero = hero;
+      this.disabled =
+        (window.matchMedia && window.matchMedia('(hover: none)').matches) ||
+        (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      if (this.disabled) return;
+
+      this.trail = document.createElement('div');
+      this.trail.className = 'cursor-trail';
+      this.trail.setAttribute('aria-hidden', 'true');
+      this.hero.appendChild(this.trail);
+
+      this.mouseX = 0; this.mouseY = 0;
+      this.trailX = 0; this.trailY = 0;
+      this.active = false;
+
+      this.handleMove = (e) => {
+        const rect = this.hero.getBoundingClientRect();
+        this.mouseX = e.clientX - rect.left;
+        this.mouseY = e.clientY - rect.top;
+        if (!this.active) {
+          // Première entrée : snap immédiat pour éviter le slide depuis (0,0)
+          this.trailX = this.mouseX;
+          this.trailY = this.mouseY;
+          this.active = true;
+          this.trail.style.opacity = '0.6';
+        }
+      };
+      this.handleLeave = () => {
+        this.active = false;
+        this.trail.style.opacity = '0';
+      };
+
+      this.hero.addEventListener('mousemove', this.handleMove);
+      this.hero.addEventListener('mouseleave', this.handleLeave);
+
+      this.animate();
+    }
+
+    animate() {
+      if (!this.trail) return;
+      this.trailX += (this.mouseX - this.trailX) * 0.15;
+      this.trailY += (this.mouseY - this.trailY) * 0.15;
+      this.trail.style.transform =
+        'translate(' + (this.trailX - 20) + 'px, ' + (this.trailY - 20) + 'px)';
+      this.rafId = requestAnimationFrame(() => this.animate());
+    }
+
+    destroy() {
+      if (this.rafId) cancelAnimationFrame(this.rafId);
+      if (this.hero) {
+        if (this.handleMove)  this.hero.removeEventListener('mousemove', this.handleMove);
+        if (this.handleLeave) this.hero.removeEventListener('mouseleave', this.handleLeave);
+      }
+      if (this.trail && this.trail.parentElement) {
+        this.trail.parentElement.removeChild(this.trail);
+      }
+      this.trail = null;
+    }
+  }
+
+  let cursorTrailInstance = null;
+  function initCursorTrail() {
+    const hero = document.querySelector('.hero');
+    if (!hero) return null;
+    return new CursorTrail(hero);
+  }
+  window.skynova.CursorTrail = CursorTrail;
 
   /* ---------- Premium · Mission 6 — Magnetic hover on primary CTAs ---------- */
   function initMagneticButtons(root) {
