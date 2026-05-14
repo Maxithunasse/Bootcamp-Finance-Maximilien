@@ -3380,56 +3380,82 @@
     return PRODUCTS.find(function (p) { return p.id === id; }) || null;
   }
 
-  /* ---------- Living lab · Mission 2 — Real product images (Unsplash) ---------- */
+  /* ---------- Product images — 20 distinct Unsplash URLs ---------- */
   const PRODUCT_IMAGES = {
-    whey_native:   'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=600&q=80',
-    whey_isolate:  'https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f?w=600&q=80',
-    creatine:      'https://images.unsplash.com/photo-1579722821273-0f6c1b0e6a7e?w=600&q=80',
-    vitamin_c:     'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=600&q=80',
-    vitamin_d:     'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&q=80',
-    multivitamin:  'https://images.unsplash.com/photo-1550572017-edd951b55104?w=600&q=80',
-    magnesium:     'https://images.unsplash.com/photo-1626516056567-fb8e0c8b2d0d?w=600&q=80',
-    spirulina:     'https://images.unsplash.com/photo-1622818425825-ab3d8c0e09e2?w=600&q=80',
-    melatonin:     'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=600&q=80',
-    ashwagandha:   'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&q=80',
-    probiotic:     'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80',
-    collagen:      'https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=600&q=80',
-    biotin:        'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=600&q=80',
-    curcumin:      'https://images.unsplash.com/photo-1615485925600-97237c4fc1ec?w=600&q=80',
-    omega3:        'https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=600&q=80',
-    default:       'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&q=80'
+    // === PROTÉINES & SPORT ===
+    whey_native:     'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=600&h=600&fit=crop&q=80',
+    whey_isolate:    'https://images.unsplash.com/photo-1622818425825-ab3d8c0e09e2?w=600&h=600&fit=crop&q=80',
+    protein_vegan:   'https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f?w=600&h=600&fit=crop&q=80',
+    creatine:        'https://images.unsplash.com/photo-1579722821273-0f6c1b0e6a7e?w=600&h=600&fit=crop&q=80',
+
+    // === VITALITÉ & IMMUNITÉ ===
+    magnesium_caps:  'https://images.unsplash.com/photo-1550572017-edd951b55104?w=600&h=600&fit=crop&q=80',
+    vitamin_c:       'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=600&h=600&fit=crop&q=80',
+    vitamin_d:       'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=600&fit=crop&q=80',
+    spirulina:       'https://images.unsplash.com/photo-1615484477778-ca3b77940c25?w=600&h=600&fit=crop&q=80',
+    multivitamin:    'https://images.unsplash.com/photo-1626516056567-fb8e0c8b2d0d?w=600&h=600&fit=crop&q=80',
+
+    // === SOMMEIL & STRESS ===
+    melatonin:       'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=600&h=600&fit=crop&q=80',
+    ashwagandha:     'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=600&h=600&fit=crop&q=80',
+    valerian:        'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=600&h=600&fit=crop&q=80',
+
+    // === DIGESTION ===
+    probiotic:       'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=600&fit=crop&q=80',
+    psyllium:        'https://images.unsplash.com/photo-1612630741022-b29c5b3c39a1?w=600&h=600&fit=crop&q=80',
+
+    // === BEAUTÉ & NUTRICOSMÉTIQUE ===
+    collagen_powder: 'https://images.unsplash.com/photo-1612531386530-97286d97c2d2?w=600&h=600&fit=crop&q=80',
+    biotin:          'https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?w=600&h=600&fit=crop&q=80',
+    hyaluronic:      'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&h=600&fit=crop&q=80',
+
+    // === ARTICULAIRE ===
+    curcumin:        'https://images.unsplash.com/photo-1615485925600-97237c4fc1ec?w=600&h=600&fit=crop&q=80',
+    glucosamine:     'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=600&h=600&fit=crop&q=80',
+
+    // === SANTÉ CIBLÉE ===
+    ginkgo:          'https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=600&h=600&fit=crop&q=80',
+
+    // === FALLBACK ===
+    default:         'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=600&fit=crop&q=80'
   };
 
-  function getProductImage(p) {
-    if (!p) return PRODUCT_IMAGES.default;
-    const name = (p.name || '').toLowerCase();
-    const cat = p.category || p.category_id;
+  function getProductImage(product) {
+    if (!product) return PRODUCT_IMAGES.default;
+    const name = (product.name || '').toLowerCase();
+    const brand = (product.brand || '').toLowerCase();
 
+    // Mapping intelligent par mots-clés produit
     if (name.indexOf('whey native') !== -1) return PRODUCT_IMAGES.whey_native;
-    if (name.indexOf('whey') !== -1) return PRODUCT_IMAGES.whey_isolate;
+    if (name.indexOf('whey isolate') !== -1 || name.indexOf('impact whey') !== -1) return PRODUCT_IMAGES.whey_isolate;
+    if (name.indexOf('whey') !== -1 || name.indexOf('protéine') !== -1) return PRODUCT_IMAGES.whey_isolate;
+    if (name.indexOf('vegan') !== -1 || name.indexOf('végétale') !== -1) return PRODUCT_IMAGES.protein_vegan;
     if (name.indexOf('créatine') !== -1 || name.indexOf('creatine') !== -1) return PRODUCT_IMAGES.creatine;
-    if (name.indexOf('magnésium') !== -1 || name.indexOf('magnesium') !== -1) return PRODUCT_IMAGES.magnesium;
-    if (name.indexOf('vitamine c') !== -1 || name.indexOf('vitamin c') !== -1) return PRODUCT_IMAGES.vitamin_c;
-    if (name.indexOf('vitamine d') !== -1 || name.indexOf('vitamin d') !== -1) return PRODUCT_IMAGES.vitamin_d;
-    if (name.indexOf('spiruline') !== -1 || name.indexOf('spirulina') !== -1) return PRODUCT_IMAGES.spirulina;
-    if (name.indexOf('mélatonine') !== -1 || name.indexOf('melatonine') !== -1 || name.indexOf('melatonin') !== -1) return PRODUCT_IMAGES.melatonin;
-    if (name.indexOf('ashwagandha') !== -1) return PRODUCT_IMAGES.ashwagandha;
-    if (name.indexOf('probio') !== -1 || name.indexOf('lactibiane') !== -1) return PRODUCT_IMAGES.probiotic;
-    if (name.indexOf('collagène') !== -1 || name.indexOf('collagen') !== -1) return PRODUCT_IMAGES.collagen;
-    if (name.indexOf('biotine') !== -1 || name.indexOf('biotin') !== -1) return PRODUCT_IMAGES.biotin;
-    if (name.indexOf('curcumine') !== -1 || name.indexOf('curcumin') !== -1) return PRODUCT_IMAGES.curcumin;
-    if (name.indexOf('oméga') !== -1 || name.indexOf('omega') !== -1) return PRODUCT_IMAGES.omega3;
 
-    const fallback = {
-      sport:     PRODUCT_IMAGES.whey_isolate,
-      vitality:  PRODUCT_IMAGES.multivitamin,
-      sleep:     PRODUCT_IMAGES.melatonin,
-      digestion: PRODUCT_IMAGES.probiotic,
-      beauty:    PRODUCT_IMAGES.collagen,
-      joints:    PRODUCT_IMAGES.curcumin,
-      targeted:  PRODUCT_IMAGES.default
-    };
-    return fallback[cat] || PRODUCT_IMAGES.default;
+    if (name.indexOf('magnésium') !== -1 || name.indexOf('magnesium') !== -1) return PRODUCT_IMAGES.magnesium_caps;
+    if (name.indexOf('vitamine c') !== -1) return PRODUCT_IMAGES.vitamin_c;
+    if (name.indexOf('vitamine d') !== -1) return PRODUCT_IMAGES.vitamin_d;
+    if (name.indexOf('spiruline') !== -1) return PRODUCT_IMAGES.spirulina;
+    if (name.indexOf('multivit') !== -1) return PRODUCT_IMAGES.multivitamin;
+
+    if (name.indexOf('mélatonine') !== -1 || name.indexOf('melatonine') !== -1) return PRODUCT_IMAGES.melatonin;
+    if (name.indexOf('ashwagandha') !== -1) return PRODUCT_IMAGES.ashwagandha;
+    if (name.indexOf('valériane') !== -1 || name.indexOf('valerian') !== -1) return PRODUCT_IMAGES.valerian;
+
+    if (name.indexOf('probiotique') !== -1 || name.indexOf('probio') !== -1 || name.indexOf('lactibiane') !== -1 ||
+        brand.indexOf('lactibiane') !== -1) return PRODUCT_IMAGES.probiotic;
+    if (name.indexOf('psyllium') !== -1) return PRODUCT_IMAGES.psyllium;
+
+    if (name.indexOf('collagène') !== -1 || name.indexOf('collagen') !== -1) return PRODUCT_IMAGES.collagen_powder;
+    if (name.indexOf('biotine') !== -1) return PRODUCT_IMAGES.biotin;
+    if (name.indexOf('hyaluronique') !== -1) return PRODUCT_IMAGES.hyaluronic;
+
+    if (name.indexOf('curcumine') !== -1 || name.indexOf('curcumin') !== -1) return PRODUCT_IMAGES.curcumin;
+    if (name.indexOf('glucosamine') !== -1) return PRODUCT_IMAGES.glucosamine;
+
+    if (name.indexOf('ginkgo') !== -1) return PRODUCT_IMAGES.ginkgo;
+
+    return PRODUCT_IMAGES.default;
   }
 
   function productImg(p, opts) {
