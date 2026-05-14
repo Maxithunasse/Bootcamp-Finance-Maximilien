@@ -5288,3 +5288,22 @@ body:has(.app-shell > .app-layout) { background: var(--ink-pure); }
 @media (prefers-reduced-motion: reduce) {
   .skynova-sweep { display: none; }
 }
+
+/* =========================================================
+   PREMIUM · MISSION 2 — Scroll progress bar
+   ========================================================= */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--lime-electric);
+  z-index: 10000;
+  transition: width 80ms ease-out;
+  box-shadow: 0 0 8px rgba(212, 255, 58, 0.4);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress { transition: none; }
+}

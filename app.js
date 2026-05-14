@@ -3981,10 +3981,27 @@
     });
   }
 
+  /* ---------- Premium · Mission 2 — Scroll progress bar ---------- */
+  function setupScrollProgress() {
+    const bar = document.getElementById('scrollProgress');
+    if (!bar) return;
+    const onScroll = function () {
+      const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+      bar.style.width = scrolled + '%';
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Also recompute on resize (scrollHeight changes when layout reflows)
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
+  }
+
   /* ---------- Boot ---------- */
   function boot() {
     setupHeaderScroll();
     setupBurger();
+    setupScrollProgress();
     route();
   }
   if (document.readyState === 'loading') {
