@@ -175,7 +175,11 @@
             el('span', { class: 'hero__title-line' }, 'Tu sais ce que tu achètes,'),
             el('span', { class: 'hero__title-line hero__title-line--lime' }, 'vraiment ?')
           ]),
-          el('p', { class: 'hero__sub' }, "Skynova décode 15 000 compléments alimentaires. Score d'efficacité, prix au gramme de principe actif, alternatives recommandées. En 3 secondes."),
+          el('p', { class: 'hero__sub' }, [
+            'Skynova décode ',
+            el('span', { dataset: { counter: '15000', separator: 'true' } }, '0'),
+            ' compléments alimentaires. Score d\'efficacité, prix au gramme de principe actif, alternatives recommandées. En 3 secondes.'
+          ]),
           el('div', { class: 'hero__ctas' }, [
             el('a', { href: '#auth',   class: 'cta cta--primary'   }, 'Commencer gratuit'),
             el('a', { href: '#search', class: 'cta cta--secondary' }, 'Voir un rapport →')
@@ -1054,11 +1058,17 @@
       el('p', { class: 'cat-hub-card__desc' }, cat.desc),
       el('div', { class: 'cat-hub-card__stats' }, [
         el('div', { class: 'cat-hub-card__stat' }, [
-          el('span', { class: 'cat-hub-card__stat-val mono' }, String(d.productCount || '—')),
+          el('span', {
+            class: 'cat-hub-card__stat-val mono',
+            dataset: d.productCount ? { counter: String(d.productCount) } : null
+          }, d.productCount ? '0' : '—'),
           el('span', { class: 'overline cat-hub-card__stat-lbl' }, 'références')
         ]),
         el('div', { class: 'cat-hub-card__stat' }, [
-          el('span', { class: 'cat-hub-card__stat-val mono cat-hub-card__stat-val--lime' }, String(d.avgScore || '—')),
+          el('span', {
+            class: 'cat-hub-card__stat-val mono cat-hub-card__stat-val--lime',
+            dataset: d.avgScore ? { counter: String(d.avgScore) } : null
+          }, d.avgScore ? '0' : '—'),
           el('span', { class: 'overline cat-hub-card__stat-lbl' }, 'score moyen')
         ]),
         el('div', { class: 'cat-hub-card__stat' }, [
@@ -2026,7 +2036,10 @@
         el('div', { class: 'lab-stat__icon' }, [ el('i', { 'data-lucide': s.icon }) ])
       ]),
       el('div', { class: 'lab-stat__num-wrap' }, [
-        el('span', { class: 'lab-stat__num mono lab-stat__num--' + s.tone }, String(s.num)),
+        el('span', {
+          class: 'lab-stat__num mono lab-stat__num--' + s.tone,
+          dataset: { counter: String(s.num) }
+        }, '0'),
         el('span', { class: 'lab-stat__affix mono' }, s.affix)
       ]),
       el('span', { class: 'lab-stat__sub mono' }, '· ' + s.sub)
@@ -3931,6 +3944,7 @@
     app.classList.add('anim-fade-in');
 
     setupCountUp(app);
+    initCounters(app);
 
     document.querySelectorAll('.site-nav__link, .mobile-drawer__link').forEach(a => {
       const href = a.getAttribute('href') || '';
@@ -3980,6 +3994,58 @@
       if (e.key === 'Escape') closeDrawer();
     });
   }
+
+  /* ---------- Premium · Mission 3 — Generic counters ([data-counter]) ---------- */
+  function initCounters(root) {
+    root = root || document;
+    const counters = root.querySelectorAll('[data-counter]');
+    if (!counters.length) return;
+
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function animateNode(node) {
+      if (node.dataset.animated) return;
+      node.dataset.animated = 'true';
+
+      const target   = parseFloat(node.dataset.counter);
+      const decimals = parseInt(node.dataset.decimals, 10) || 0;
+      const suffix   = node.dataset.suffix || '';
+      const prefix   = node.dataset.prefix || '';
+      const useSep   = node.dataset.separator === 'true';
+      const duration = parseInt(node.dataset.duration, 10) || 1400;
+      const start    = performance.now();
+
+      function step(now) {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = easeOutCubic(t);
+        const value = target * eased;
+        let formatted = value.toFixed(decimals);
+        if (useSep) {
+          formatted = parseFloat(formatted).toLocaleString('fr-FR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          });
+        }
+        node.textContent = prefix + formatted + suffix;
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          animateNode(entry.target);
+          io.unobserve(entry.target);
+        });
+      }, { threshold: 0.3 });
+      counters.forEach(function (c) { io.observe(c); });
+    } else {
+      counters.forEach(animateNode);
+    }
+  }
+  window.skynova.initCounters = initCounters;
 
   /* ---------- Premium · Mission 2 — Scroll progress bar ---------- */
   function setupScrollProgress() {
