@@ -4139,6 +4139,7 @@
       initCounters(app);
       initGauges(app);
       initMagneticButtons(app);
+      initScrollReveal(app);
 
       if (pageId === 'home') {
         setTimeout(startHeroCycle, 0);
@@ -4523,6 +4524,49 @@
     return new CursorTrail(hero);
   }
   window.skynova.CursorTrail = CursorTrail;
+
+  /* ---------- Living lab · Mission 4 — Cinematic scroll reveal ---------- */
+  function initScrollReveal(root) {
+    root = root || document;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Mark them as revealed inline so they show full state immediately
+      root.querySelectorAll('.problem, .how, .demo, .categories, .testi, .pricing-teaser, .cta-final, .page-block, .product-section')
+        .forEach(function (s) {
+          s.classList.add('scroll-reveal', 'revealed');
+        });
+      return;
+    }
+
+    const selectors = [
+      '.problem', '.how', '.demo', '.categories', '.testi', '.pricing-teaser', '.cta-final',
+      '.page-block',
+      '.product-section'
+    ].join(', ');
+
+    const sections = root.querySelectorAll(selectors);
+    sections.forEach(function (s) {
+      if (s.dataset.revealed === 'true') return;
+      s.classList.add('scroll-reveal');
+    });
+
+    if (!('IntersectionObserver' in window)) {
+      sections.forEach(function (s) { s.classList.add('revealed'); });
+      return;
+    }
+
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          entry.target.dataset.revealed = 'true';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -100px 0px' });
+
+    sections.forEach(function (s) { observer.observe(s); });
+  }
+  window.skynova.initScrollReveal = initScrollReveal;
 
   /* ---------- Premium · Mission 6 — Magnetic hover on primary CTAs ---------- */
   function initMagneticButtons(root) {

@@ -5572,6 +5572,36 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
 }
 
 /* =========================================================
+   LIVING LAB · MISSION 4 — Cinematic scroll reveal
+   ========================================================= */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  filter: blur(8px);
+  transition:
+    opacity 800ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 800ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 600ms ease-out;
+  will-change: opacity, transform, filter;
+}
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal.revealed {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+    will-change: auto;
+  }
+}
+
+/* =========================================================
    PREMIUM · MISSION 2 — Scroll progress bar
    ========================================================= */
 .scroll-progress {
