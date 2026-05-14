@@ -5460,6 +5460,89 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
 }
 
 /* =========================================================
+   LIVING LAB · MISSION 2 — Real product images
+   ========================================================= */
+.product-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--ink-mid);
+  filter: brightness(0.88) contrast(1.05) saturate(1.08);
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1), filter 300ms ease-out;
+}
+
+/* For containers with absolutely-positioned overlay tags */
+.hero-card__image > .product-image,
+.demo__product-image > .product-image,
+.product-hero__image > .product-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Keep grid overlay above the image but below the tags */
+.hero-card__image::before,
+.demo__product-image::before,
+.product-hero__image::before {
+  z-index: 1;
+}
+
+/* Hover scale on parent cards/items */
+.hero-card:hover .product-image,
+.sp-card:hover .product-image,
+.alt-card:hover .product-image,
+.reco-card:hover .product-image,
+.alt-mini:hover .product-image,
+.scan-item:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* Boost saturation on hover for the bigger cards */
+.hero-card:hover .product-image,
+.sp-card:hover .product-image,
+.reco-card:hover .product-image {
+  filter: brightness(0.95) contrast(1.08) saturate(1.18);
+}
+
+/* Add overflow hidden where the parent tiles don't have it (so hover scale clips correctly) */
+.scan-item__mark,
+.alt-mini__image,
+.alt-card__image,
+.reco-card__image {
+  overflow: hidden;
+}
+
+/* Skeleton shimmer pendant que l'image charge */
+.product-image:not([src]),
+.product-image[src=""] {
+  background: linear-gradient(
+    90deg,
+    var(--ink-mid) 0%,
+    var(--ink-soft) 50%,
+    var(--ink-mid) 100%
+  );
+  background-size: 200% 100%;
+  animation: imageShimmer 1.5s ease-in-out infinite;
+}
+@keyframes imageShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* In the small scan-item tile, make sure the image sits flush */
+.scan-item__mark > .product-image {
+  border-radius: 0;
+  filter: brightness(0.90) contrast(1.1);
+}
+
+/* In the alt-mini small tile, same */
+.alt-mini__image > .product-image {
+  border-radius: 0;
+  filter: brightness(0.90) contrast(1.1);
+}
+
+/* =========================================================
    PREMIUM · MISSION 2 — Scroll progress bar
    ========================================================= */
 .scroll-progress {
