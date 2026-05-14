@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#0A0A0B"/>
+
+  <!-- Subtle grid pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1A1A1F" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="glow" cx="20%" cy="30%">
+      <stop offset="0%" stop-color="#D4FF3A" stop-opacity="0.08"/>
+      <stop offset="60%" stop-color="#0A0A0B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.45"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Top-left lime accent line -->
+  <line x1="80" y1="100" x2="200" y2="100" stroke="#D4FF3A" stroke-width="2"/>
+
+  <!-- Top-right meta -->
+  <text x="1120" y="108" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" fill="#7E7E78" text-anchor="end" letter-spacing="2.5">N° 001 · PARIS · MMXXVI</text>
+
+  <!-- Overline -->
+  <text x="80" y="220" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" fill="#7E7E78" letter-spacing="3.5">· LABORATOIRE INDÉPENDANT ·</text>
+
+  <!-- Wordmark + lime dot -->
+  <text x="80" y="360" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="130" font-weight="700" fill="#FAFAF7" letter-spacing="-5">skynova</text>
+  <circle cx="600" cy="332" r="15" fill="#D4FF3A"/>
+  <circle cx="600" cy="332" r="24" fill="#D4FF3A" opacity="0.18"/>
+
+  <!-- Tagline -->
+  <text x="80" y="455" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="38" font-weight="400" fill="#C7C7C0" letter-spacing="-1">Décode tes compléments alimentaires.</text>
+
+  <!-- Sub-tagline -->
+  <text x="80" y="498" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="400" fill="#7E7E78" letter-spacing="-0.5">Score d'efficacité · Prix au mg actif · Alternatives recommandées</text>
+
+  <!-- Bottom lime sweep -->
+  <line x1="80" y1="555" x2="1120" y2="555" stroke="#D4FF3A" stroke-width="1" opacity="0.6"/>
+
+  <!-- Bottom meta -->
+  <text x="80" y="588" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#7E7E78" letter-spacing="2">2 200 RÉFÉRENCES · 7 CATÉGORIES · ALGORITHME OUVERT</text>
+  <text x="1120" y="588" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" fill="#7E7E78" text-anchor="end" letter-spacing="2">SKYNOVA · MMXXVI</text>
+</svg>
