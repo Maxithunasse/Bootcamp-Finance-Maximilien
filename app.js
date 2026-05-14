@@ -274,6 +274,10 @@
 
   function heroSection() {
     return el('section', { class: 'hero' }, [
+      el('div', { class: 'parallax-hero', 'aria-hidden': 'true', dataset: { parallaxSpeed: '0.5' } }, [
+        el('div', { class: 'parallax-hero-image' }),
+        el('div', { class: 'parallax-hero-overlay' })
+      ]),
       el('div', { class: 'hero__container' }, [
         el('div', { class: 'hero__left' }, [
           el('span', { class: 'overline hero__overline' }, '· ENQUÊTE INDÉPENDANTE EN COURS ·'),
@@ -816,15 +820,42 @@
     ]);
   }
 
+  /* ---------- Apothecary parallax dividers (editorial breath) ---------- */
+  function parallaxDivider1() {
+    return el('section', {
+      class: 'parallax-divider parallax-divider-1',
+      dataset: { parallaxSpeed: '0.3' }
+    }, [
+      el('div', { class: 'parallax-divider-image', 'aria-hidden': 'true' }),
+      el('div', { class: 'parallax-divider-overlay', 'aria-hidden': 'true' }),
+      el('div', { class: 'parallax-divider-quote' }, [
+        el('p', { class: 'overline' }, '· Index 001 ·'),
+        el('p', { class: 'serif' }, '« Chaque complément raconte une histoire de dosage, de pureté, de provenance. »')
+      ])
+    ]);
+  }
+
+  function parallaxDivider2() {
+    return el('section', {
+      class: 'parallax-divider parallax-divider-2',
+      dataset: { parallaxSpeed: '0.4' }
+    }, [
+      el('div', { class: 'parallax-divider-image', 'aria-hidden': 'true' }),
+      el('div', { class: 'parallax-divider-overlay', 'aria-hidden': 'true' })
+    ]);
+  }
+
   function renderHome() {
     const frag = document.createDocumentFragment();
     frag.appendChild(heroSection());
     frag.appendChild(problemSection());
     frag.appendChild(howSection());
     frag.appendChild(demoSection());
+    frag.appendChild(parallaxDivider1());
     frag.appendChild(categoriesSection());
     frag.appendChild(testimonialsSection());
     frag.appendChild(pricingTeaserSection());
+    frag.appendChild(parallaxDivider2());
     frag.appendChild(ctaFinalSection());
     return frag;
   }
@@ -4154,6 +4185,10 @@
       cursorTrailInstance.destroy();
       cursorTrailInstance = null;
     }
+    if (parallaxInstance) {
+      parallaxInstance.destroy();
+      parallaxInstance = null;
+    }
 
     function finalize() {
       setupCountUp(app);
@@ -4167,6 +4202,7 @@
         setTimeout(startHeroCycle, 0);
         setTimeout(function () {
           cursorTrailInstance = initCursorTrail();
+          initParallax();
         }, 50);
       }
 
@@ -4302,9 +4338,89 @@
   }
   window.skynova.initCounters = initCounters;
 
-  /* (Canvas background animation removed — was TopographyAnimation / Botanica
-     / LabNetwork in earlier missions. Replaced by editorial parallax images
-     installed in a separate mission.) */
+  /* ---------- Apothecary · Mission Parallax — Editorial product images parallax ---------- */
+  class ParallaxSystem {
+    constructor() {
+      this.elements = [];
+      this.scrollY = 0;
+      this.ticking = false;
+      this.disabled = false;
+
+      const isMobile = window.innerWidth < 768;
+      const isReduced = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (isMobile || isReduced) {
+        this.disabled = true;
+        return;
+      }
+      this.scan();
+      if (this.elements.length === 0) return;
+      this.bindEvents();
+      this.update();
+    }
+
+    scan() {
+      const heroImage = document.querySelector('.parallax-hero-image');
+      if (heroImage) {
+        const container = heroImage.closest('.parallax-hero');
+        this.elements.push({
+          element: heroImage,
+          speed: 0.5,
+          container: container
+        });
+      }
+      document.querySelectorAll('.parallax-divider-image').forEach((img) => {
+        const container = img.closest('.parallax-divider');
+        if (!container) return;
+        const speed = parseFloat(container.dataset.parallaxSpeed) || 0.3;
+        this.elements.push({ element: img, speed: speed, container: container });
+      });
+    }
+
+    bindEvents() {
+      this.handleScroll = () => this.onScroll();
+      window.addEventListener('scroll', this.handleScroll, { passive: true });
+    }
+
+    onScroll() {
+      this.scrollY = window.scrollY;
+      if (!this.ticking) {
+        requestAnimationFrame(() => this.update());
+        this.ticking = true;
+      }
+    }
+
+    update() {
+      const viewportHeight = window.innerHeight;
+      this.elements.forEach(({ element, speed, container }) => {
+        const rect = container.getBoundingClientRect();
+        // Skip if fully outside viewport (perf optim)
+        if (rect.bottom < -200 || rect.top > viewportHeight + 200) return;
+        const elementCenter = rect.top + rect.height / 2;
+        const viewportCenter = viewportHeight / 2;
+        const distance = elementCenter - viewportCenter;
+        const translateY = -distance * speed * 0.15;
+        element.style.transform = 'translate3d(0, ' + translateY + 'px, 0)';
+      });
+      this.ticking = false;
+    }
+
+    destroy() {
+      if (this.handleScroll) {
+        window.removeEventListener('scroll', this.handleScroll);
+      }
+    }
+  }
+
+  let parallaxInstance = null;
+  function initParallax() {
+    if (parallaxInstance) {
+      parallaxInstance.destroy();
+      parallaxInstance = null;
+    }
+    parallaxInstance = new ParallaxSystem();
+  }
+  window.skynova.Parallax = ParallaxSystem;
 
   /* ---------- Apothecary · Mission 5C — Custom cursor ---------- */
   function initCustomCursor() {
