@@ -5639,6 +5639,45 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
 }
 
 /* =========================================================
+   LIVING LAB · MISSION 6 — Split text reveal on headlines
+   ========================================================= */
+.split-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.4em);
+  filter: blur(6px);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 500ms ease-out;
+  will-change: opacity, transform, filter;
+}
+.split-revealed .split-word {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+  will-change: auto;
+}
+
+/* When the hero title is split into words, the line-level cascade is replaced */
+.hero__title.is-split .hero__title-line {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-word,
+  .split-revealed .split-word {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+    will-change: auto;
+  }
+}
+
+/* =========================================================
    PREMIUM · MISSION 2 — Scroll progress bar
    ========================================================= */
 .scroll-progress {

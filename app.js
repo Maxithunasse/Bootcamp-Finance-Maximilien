@@ -4140,6 +4140,7 @@
       initGauges(app);
       initMagneticButtons(app);
       initScrollReveal(app);
+      initSplitText(app);
 
       if (pageId === 'home') {
         setTimeout(startHeroCycle, 0);
@@ -4524,6 +4525,78 @@
     return new CursorTrail(hero);
   }
   window.skynova.CursorTrail = CursorTrail;
+
+  /* ---------- Living lab · Mission 6 — Split text reveal on major headlines ---------- */
+  function splitTextInHeadline(headline) {
+    if (!headline || headline.dataset.splitDone === 'true') return;
+    headline.dataset.splitDone = 'true';
+
+    // Hero title gets a 350ms base delay to stay synced with the sweep + cascade
+    const baseDelay = headline.classList.contains('hero__title') ? 350 : 0;
+    let wordIndex = 0;
+
+    function process(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        if (!text) return;
+        const parts = text.split(/(\s+)/);
+        const frag = document.createDocumentFragment();
+        parts.forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) {
+            frag.appendChild(document.createTextNode(part));
+          } else {
+            const span = document.createElement('span');
+            span.className = 'split-word';
+            span.style.transitionDelay = (baseDelay + wordIndex * 60) + 'ms';
+            span.textContent = part;
+            frag.appendChild(span);
+            wordIndex++;
+          }
+        });
+        if (node.parentNode) node.parentNode.replaceChild(frag, node);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        // Recurse into element children (preserves wrappers like .hero__title-line--lime)
+        Array.from(node.childNodes).forEach(process);
+      }
+    }
+
+    Array.from(headline.childNodes).forEach(process);
+    headline.classList.add('is-split');
+  }
+
+  function initSplitText(root) {
+    root = root || document;
+    const headlines = root.querySelectorAll('.hero__title, [data-split-text]');
+    if (!headlines.length) return;
+
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      headlines.forEach(function (h) {
+        splitTextInHeadline(h);
+        h.classList.add('split-revealed');
+      });
+      return;
+    }
+
+    headlines.forEach(splitTextInHeadline);
+
+    if (!('IntersectionObserver' in window)) {
+      headlines.forEach(function (h) { h.classList.add('split-revealed'); });
+      return;
+    }
+
+    const observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('split-revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+
+    headlines.forEach(function (h) { observer.observe(h); });
+  }
+  window.skynova.initSplitText = initSplitText;
 
   /* ---------- Living lab · Mission 4 — Cinematic scroll reveal ---------- */
   function initScrollReveal(root) {
