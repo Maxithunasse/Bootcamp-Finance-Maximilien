@@ -616,8 +616,8 @@ ul { list-style: none; }
   overflow: hidden;
 }
 
-/* Botanica canvas (Mission 2 — filaments d'encre organiques, full viewport fixed) */
-.botanica-canvas {
+/* Topography canvas (scroll-driven contour lines, full viewport fixed) */
+.topography-canvas {
   position: fixed;
   top: 0;
   left: 0;
@@ -625,12 +625,11 @@ ul { list-style: none; }
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  mix-blend-mode: multiply;
+  transition: clip-path 1200ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 /* Tout le contenu principal reste au-dessus du canvas global.
-   On exclut explicitement les éléments qui ont déjà leur propre z-index
-   (sweep, scroll-progress, header sticky, ticker, live-activity, drawer)
-   pour ne pas écraser leur stacking. */
+   Les éléments à z-index propre (header 100, sweep 9999, scroll-progress 10000,
+   ticker 90, live-activity 95, drawer 99) conservent leur stacking. */
 .app-shell,
 .site-footer {
   position: relative;
@@ -638,7 +637,7 @@ ul { list-style: none; }
 }
 /* Désactiver si reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  .botanica-canvas { display: none; }
+  .topography-canvas { display: none; }
 }
 /* Tous les enfants du hero passent au-dessus du contenu local (cursor trail etc.) */
 .hero > * {

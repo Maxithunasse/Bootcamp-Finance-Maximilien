@@ -4276,19 +4276,21 @@
   }
   window.skynova.initCounters = initCounters;
 
-  /* ---------- Apothecary · Mission 2 — Botanica organic ink filaments ---------- */
-  class Botanica {
+  /* ---------- Topography — scroll-driven contour lines animation ---------- */
+  class TopographyAnimation {
     constructor(canvas) {
       this.canvas = canvas;
       this.ctx = canvas.getContext('2d');
-      this.filaments = [];
-      this.mouse = { x: -1000, y: -1000, vx: 0, vy: 0 };
       this.scrollProgress = 0;
+      this.targetScrollProgress = 0;
+      this.time = 0;
+      this.mouse = { x: 0.5, y: 0.5 };
+      this.targetMouse = { x: 0.5, y: 0.5 };
+
       this.config = this.getConfig();
-      if (!this.config.maxFilaments) return;
+      if (this.config.disabled) return;
       this.resize();
       this.bindEvents();
-      this.spawnInitialFilaments();
       this.animate();
     }
 
@@ -4296,22 +4298,25 @@
       const isMobile = window.innerWidth < 768;
       const isReducedMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (isReducedMotion) return { maxFilaments: 0 };
+      if (isReducedMotion) return { disabled: true };
       return {
-        maxFilaments: isMobile ? 18 : 38,
-        growthSpeed: isMobile ? 1.8 : 2.4,
-        baseOpacity: 0.15,
-        lineWidth: 0.9,
-        branchProbability: 0.35,
-        maxBranches: 3,
-        filamentLifespan: 280,
-        mouseInfluenceRadius: 140,
-        inkColor: '31, 27, 22' // --ink-rich
+        disabled: false,
+        lineCount: isMobile ? 22 : 38,
+        pointsPerLine: isMobile ? 60 : 110,
+        lineSpacing: isMobile ? 22 : 28,
+        amplitude: isMobile ? 35 : 55,
+        waveSpeed: 0.0008,
+        mouseInfluence: 0.4,
+        strokeBase: 0.4,
+        strokeMax: 1.1,
+        colorRgb: '31, 27, 22',
+        opacityBase: 0.08,
+        opacityCenter: 0.22
       };
     }
 
     resize() {
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       this.canvas.width = window.innerWidth * dpr;
       this.canvas.height = window.innerHeight * dpr;
       this.canvas.style.width = window.innerWidth + 'px';
@@ -4323,175 +4328,143 @@
     }
 
     bindEvents() {
-      this.handleResize = () => this.resize();
-      window.addEventListener('resize', this.handleResize);
-
-      this.handleMouseMove = (e) => {
-        this.mouse.vx = e.clientX - this.mouse.x;
-        this.mouse.vy = e.clientY - this.mouse.y;
-        this.mouse.x = e.clientX;
-        this.mouse.y = e.clientY;
+      let resizeTimer;
+      this.handleResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => this.resize(), 150);
       };
-      window.addEventListener('mousemove', this.handleMouseMove);
+      window.addEventListener('resize', this.handleResize);
 
       this.handleScroll = () => {
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        this.scrollProgress = docHeight > 0 ? Math.min(1, window.scrollY / docHeight) : 0;
+        if (docHeight > 0) {
+          this.targetScrollProgress = Math.min(1, Math.max(0, window.scrollY / docHeight));
+        }
       };
       window.addEventListener('scroll', this.handleScroll, { passive: true });
+
+      this.handleMouseMove = (e) => {
+        this.targetMouse.x = e.clientX / this.width;
+        this.targetMouse.y = e.clientY / this.height;
+      };
+      window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
     }
 
-    spawnInitialFilaments() {
-      const startCount = Math.floor(this.config.maxFilaments * 0.6);
-      for (let i = 0; i < startCount; i++) {
-        this.filaments.push(this.createFilament());
+    /**
+     * Détermine la zone d'affichage selon le scroll : pleine largeur (hero),
+     * puis se contracte à droite, puis à gauche, puis remontée pleine largeur en bas.
+     */
+    getDisplayZone() {
+      const p = this.scrollProgress;
+      if (p < 0.25) {
+        return { offsetX: 0, scaleX: 1, focusY: 0.5 };
+      } else if (p < 0.5) {
+        const t = (p - 0.25) / 0.25;
+        const eased = this.easeInOutCubic(t);
+        return {
+          offsetX: this.width * 0.4 * eased,
+          scaleX: 1 - 0.4 * eased,
+          focusY: 0.5
+        };
+      } else if (p < 0.75) {
+        const t = (p - 0.5) / 0.25;
+        const eased = this.easeInOutCubic(t);
+        // Slide depuis le côté droit (offsetX = 40% width) vers gauche (offsetX = 0)
+        return {
+          offsetX: this.width * 0.4 * (1 - eased),
+          scaleX: 0.6,
+          focusY: 0.5
+        };
+      } else {
+        const t = (p - 0.75) / 0.25;
+        const eased = this.easeInOutCubic(t);
+        return {
+          offsetX: 0,
+          scaleX: 0.6 + 0.4 * eased,
+          focusY: 0.5 + 0.3 * eased
+        };
       }
     }
 
-    createFilament(parentEnd, depth) {
-      depth = depth || 0;
-      const startX = parentEnd ? parentEnd.x : Math.random() * this.width;
-      const startY = parentEnd ? parentEnd.y : Math.random() * this.height;
-
-      const baseAngle = parentEnd
-        ? parentEnd.angle + (Math.random() - 0.5) * 1.2
-        : Math.random() * Math.PI * 2;
-      const length = 80 + Math.random() * 180;
-
-      return {
-        x0: startX, y0: startY,
-        x1: startX + Math.cos(baseAngle) * length * 0.3,
-        y1: startY + Math.sin(baseAngle) * length * 0.3 - 20,
-        x2: startX + Math.cos(baseAngle + 0.3) * length * 0.7,
-        y2: startY + Math.sin(baseAngle + 0.3) * length * 0.7 - 30,
-        x3: startX + Math.cos(baseAngle + 0.6) * length,
-        y3: startY + Math.sin(baseAngle + 0.6) * length,
-
-        angle: baseAngle,
-        depth: depth,
-        maxDepth: 2 + Math.floor(Math.random() * 2),
-
-        progress: 0,
-        growthRate: this.config.growthSpeed / length,
-        age: 0,
-        lifespan: this.config.filamentLifespan + Math.random() * 100,
-
-        thickness: this.config.lineWidth * (1 - depth * 0.2),
-        branched: false,
-        dying: false
-      };
+    easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
 
-    getBezierPoint(f, t) {
-      const u = 1 - t;
-      const tt = t * t;
-      const uu = u * u;
-      const uuu = uu * u;
-      const ttt = tt * t;
-      return {
-        x: uuu * f.x0 + 3 * uu * t * f.x1 + 3 * u * tt * f.x2 + ttt * f.x3,
-        y: uuu * f.y0 + 3 * uu * t * f.y1 + 3 * u * tt * f.y2 + ttt * f.y3
-      };
+    lerp(start, end, amount) {
+      return start + (end - start) * amount;
     }
 
     update() {
-      const liveFilaments = [];
-
-      this.filaments.forEach(f => {
-        if (f.progress < 1) {
-          f.progress = Math.min(1, f.progress + f.growthRate);
-
-          if (!f.branched && f.progress > 0.5 &&
-              f.depth < f.maxDepth &&
-              Math.random() < this.config.branchProbability) {
-            f.branched = true;
-            const branchEnd = this.getBezierPoint(f, f.progress);
-            branchEnd.angle = f.angle;
-            const branchCount = 1 + Math.floor(Math.random() * 2);
-            for (let i = 0; i < branchCount; i++) {
-              if (this.filaments.length + liveFilaments.length < this.config.maxFilaments) {
-                liveFilaments.push(this.createFilament(branchEnd, f.depth + 1));
-              }
-            }
-          }
-        } else {
-          f.age++;
-          if (f.age > f.lifespan * 0.7) f.dying = true;
-        }
-
-        const center = this.getBezierPoint(f, f.progress * 0.5);
-        const dx = center.x - this.mouse.x;
-        const dy = center.y - this.mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < this.config.mouseInfluenceRadius) {
-          const influence = 1 - dist / this.config.mouseInfluenceRadius;
-          f.thickness = this.config.lineWidth * (1 + influence * 0.8);
-        } else {
-          f.thickness = this.config.lineWidth * (1 - f.depth * 0.2);
-        }
-
-        if (f.age < f.lifespan) liveFilaments.push(f);
-      });
-
-      this.filaments = liveFilaments;
-
-      const targetCount = this.getTargetFilamentCount();
-      while (this.filaments.length < targetCount) {
-        this.filaments.push(this.createFilament());
-      }
-    }
-
-    getTargetFilamentCount() {
-      if (this.scrollProgress < 0.2) return this.config.maxFilaments;
-      if (this.scrollProgress < 0.6) return Math.floor(this.config.maxFilaments * 0.5);
-      return Math.floor(this.config.maxFilaments * 0.35);
-    }
-
-    getCurrentOpacity() {
-      if (this.scrollProgress < 0.2) return this.config.baseOpacity;
-      if (this.scrollProgress < 0.6) return this.config.baseOpacity * 0.5;
-      return this.config.baseOpacity * 0.3;
+      this.time += 1;
+      this.scrollProgress = this.lerp(this.scrollProgress, this.targetScrollProgress, 0.08);
+      this.mouse.x = this.lerp(this.mouse.x, this.targetMouse.x, 0.05);
+      this.mouse.y = this.lerp(this.mouse.y, this.targetMouse.y, 0.05);
     }
 
     draw() {
       this.ctx.clearRect(0, 0, this.width, this.height);
-      const globalOpacity = this.getCurrentOpacity();
 
-      this.filaments.forEach(f => {
-        const fadeIn = Math.min(1, f.progress * 4);
-        const fadeOut = f.dying
-          ? Math.max(0, 1 - (f.age - f.lifespan * 0.7) / (f.lifespan * 0.3))
-          : 1;
-        const opacity = globalOpacity * fadeIn * fadeOut;
-        if (opacity < 0.01) return;
+      const zone = this.getDisplayZone();
+      const t = this.time * this.config.waveSpeed;
+      const mouseX = this.mouse.x;
+      const mouseY = this.mouse.y;
 
-        this.ctx.strokeStyle = 'rgba(' + this.config.inkColor + ', ' + opacity + ')';
-        this.ctx.lineWidth = f.thickness;
+      const centerY = this.height * 0.5;
+      const totalLineHeight = this.config.lineCount * this.config.lineSpacing;
+      const startY = centerY - totalLineHeight / 2;
+
+      const effectiveWidth = this.width * zone.scaleX;
+      const offsetX = zone.offsetX;
+
+      for (let line = 0; line < this.config.lineCount; line++) {
+        const lineY = startY + line * this.config.lineSpacing;
+
+        const distFromFocus = Math.abs(line - this.config.lineCount / 2)
+                              / (this.config.lineCount / 2);
+        const lineOpacity = this.lerp(
+          this.config.opacityCenter,
+          this.config.opacityBase,
+          distFromFocus
+        );
+
+        const strokeWidth = this.lerp(
+          this.config.strokeMax,
+          this.config.strokeBase,
+          distFromFocus
+        );
+
+        this.ctx.strokeStyle = 'rgba(' + this.config.colorRgb + ', ' + lineOpacity + ')';
+        this.ctx.lineWidth = strokeWidth;
         this.ctx.lineCap = 'round';
 
         this.ctx.beginPath();
-        this.ctx.moveTo(f.x0, f.y0);
 
-        const steps = 24;
-        const visibleSteps = Math.floor(steps * f.progress);
-        for (let i = 1; i <= visibleSteps; i++) {
-          const t = i / steps;
-          const pt = this.getBezierPoint(f, t);
-          this.ctx.lineTo(pt.x, pt.y);
+        for (let i = 0; i <= this.config.pointsPerLine; i++) {
+          const xRatio = i / this.config.pointsPerLine;
+          const x = offsetX + xRatio * effectiveWidth;
+
+          const wave1 = Math.sin(xRatio * 5  + t * 800  + line * 0.4)  * this.config.amplitude * 0.6;
+          const wave2 = Math.sin(xRatio * 11 + t * 1300 - line * 0.2)  * this.config.amplitude * 0.3;
+          const wave3 = Math.sin(xRatio * 2.3 + t * 500 + line * 0.15) * this.config.amplitude * 0.4;
+
+          const dx = xRatio - mouseX;
+          const dy = (lineY / this.height) - mouseY;
+          const distMouse = Math.sqrt(dx * dx + dy * dy);
+          const mouseEffect = Math.max(0, 1 - distMouse * 3) * 40 * this.config.mouseInfluence;
+
+          const yOffset = wave1 + wave2 + wave3 - mouseEffect;
+          const y = lineY + yOffset;
+
+          if (i === 0) this.ctx.moveTo(x, y);
+          else         this.ctx.lineTo(x, y);
         }
+
         this.ctx.stroke();
-
-        if (f.progress < 1 && f.progress > 0.05) {
-          const tip = this.getBezierPoint(f, f.progress);
-          this.ctx.fillStyle = 'rgba(' + this.config.inkColor + ', ' + (opacity * 1.5) + ')';
-          this.ctx.beginPath();
-          this.ctx.arc(tip.x, tip.y, f.thickness * 1.2, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-      });
+      }
     }
 
     animate() {
+      if (this.config.disabled) return;
       this.update();
       this.draw();
       this.rafId = requestAnimationFrame(() => this.animate());
@@ -4500,18 +4473,18 @@
     destroy() {
       if (this.rafId) cancelAnimationFrame(this.rafId);
       if (this.handleResize)    window.removeEventListener('resize', this.handleResize);
-      if (this.handleMouseMove) window.removeEventListener('mousemove', this.handleMouseMove);
       if (this.handleScroll)    window.removeEventListener('scroll', this.handleScroll);
+      if (this.handleMouseMove) window.removeEventListener('mousemove', this.handleMouseMove);
     }
   }
 
-  let botanicaInstance = null;
-  function initBotanica() {
-    const canvas = document.getElementById('botanica');
-    if (!canvas || botanicaInstance) return;
-    botanicaInstance = new Botanica(canvas);
+  let topographyInstance = null;
+  function initTopography() {
+    const canvas = document.getElementById('topography');
+    if (!canvas || topographyInstance) return;
+    topographyInstance = new TopographyAnimation(canvas);
   }
-  window.skynova.Botanica = Botanica;
+  window.skynova.Topography = TopographyAnimation;
 
   /* ---------- Apothecary · Mission 5C — Custom cursor ---------- */
   function initCustomCursor() {
@@ -4829,7 +4802,7 @@
     setupBurger();
     setupScrollProgress();
     initMagneticButtons(document);
-    initBotanica();
+    initTopography();
     initCustomCursor();
     route();
   }
