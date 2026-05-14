@@ -835,6 +835,11 @@ ul { list-style: none; }
   stroke-dasharray: var(--gauge-c, 240);
   stroke-dashoffset: var(--gauge-c, 240);
   animation: gaugeFill 800ms cubic-bezier(0.16, 1, 0.3, 1) var(--gauge-delay, 0ms) forwards;
+  animation-play-state: paused;
+}
+.gauge.is-in-view .gauge__progress { animation-play-state: running; }
+@media (prefers-reduced-motion: reduce) {
+  .gauge.is-in-view .gauge__progress { animation-duration: 0.01ms; }
 }
 @keyframes gaugeFill {
   to { stroke-dashoffset: var(--gauge-target, 0); }

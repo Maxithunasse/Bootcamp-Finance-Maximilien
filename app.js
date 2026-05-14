@@ -120,12 +120,68 @@
     wrap.appendChild(svg);
     wrap.appendChild(
       el('div', { class: 'gauge__center' }, [
-        el('span', { class: 'gauge__num' }, String(Math.round(v)))
+        el('span', {
+          class: 'gauge__num',
+          dataset: { target: String(Math.round(v)) }
+        }, '0')
       ])
     );
     return wrap;
   }
   window.skynova.renderGauge = renderGauge;
+
+  /* ---------- Premium · Mission 4 — Gauge fill + sync number ---------- */
+  function initGauges(root) {
+    root = root || document;
+    const gauges = root.querySelectorAll('.gauge');
+    if (!gauges.length) return;
+
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function animateNum(gauge) {
+      const numEl = gauge.querySelector('.gauge__num');
+      if (!numEl || numEl.dataset.animated) return;
+      numEl.dataset.animated = 'true';
+      const target = parseFloat(numEl.dataset.target || numEl.textContent || '0');
+      if (isNaN(target)) return;
+      const delayStr = gauge.style.getPropertyValue('--gauge-delay') || '0ms';
+      const delay = parseInt(delayStr, 10) || 0;
+      const duration = 800;
+
+      numEl.textContent = '0';
+      setTimeout(function () {
+        const start = performance.now();
+        function step(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = easeOutCubic(t);
+          numEl.textContent = String(Math.round(target * eased));
+          if (t < 1) requestAnimationFrame(step);
+          else numEl.textContent = String(Math.round(target));
+        }
+        requestAnimationFrame(step);
+      }, delay);
+    }
+
+    function trigger(gauge) {
+      if (gauge.classList.contains('is-in-view')) return;
+      gauge.classList.add('is-in-view');
+      animateNum(gauge);
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          trigger(entry.target);
+          io.unobserve(entry.target);
+        });
+      }, { threshold: 0.3 });
+      gauges.forEach(function (g) { io.observe(g); });
+    } else {
+      gauges.forEach(trigger);
+    }
+  }
+  window.skynova.initGauges = initGauges;
 
   function gaugeBlock(label, value, tone, delay) {
     return el('div', { class: 'gauge-block' }, [
@@ -467,6 +523,7 @@
         b.classList.toggle('is-active', b.dataset.product === newId);
       });
       if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+      initGauges(panel);
     }, 150);
   }
 
@@ -3945,6 +4002,7 @@
 
     setupCountUp(app);
     initCounters(app);
+    initGauges(app);
 
     document.querySelectorAll('.site-nav__link, .mobile-drawer__link').forEach(a => {
       const href = a.getAttribute('href') || '';
