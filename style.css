@@ -126,14 +126,20 @@ ul { list-style: none; }
 
 /* ---------- Typography utilities ---------- */
 .mono   { font-family: var(--font-mono); }
-.serif  { font-family: var(--font-serif); font-style: italic; }
+.serif  {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  letter-spacing: -0.02em;
+}
 
 .overline {
   display: inline-block;
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   color: var(--bone-faded);
   font-family: var(--font-sans);
 }
@@ -705,10 +711,11 @@ ul { list-style: none; }
 .hero__title-line:nth-child(1) { animation-delay: 350ms; }
 .hero__title-line:nth-child(2) { animation-delay: 450ms; }
 .hero__title-line--lime {
-  color: var(--lime-electric);
+  color: var(--ink-rich);
   font-family: var(--font-serif);
   font-style: italic;
-  font-weight: 400;
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
   letter-spacing: -0.02em;
 }
 
@@ -5746,4 +5753,57 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
 }
 @media (prefers-reduced-motion: reduce) {
   .scroll-progress { transition: none; }
+}
+
+/* =========================================================
+   APOTHECARY · MISSION 4 — Editorial typography (Fraunces)
+   ========================================================= */
+
+/* Section H2s switch to Fraunces 500 with display optical size — magazine feel.
+   Existing responsive font-size declarations are preserved (only family + weight + tracking change). */
+.problem__title,
+.how__title,
+.demo__title,
+.categories__title,
+.testi__title,
+.pricing-teaser__title,
+.page-h2,
+.page-hero__title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.025em;
+}
+
+/* Italic-accent fragments inside H2s — switched from lime/olive accent to
+   ink-rich italic serif for editorial consistency (sans/serif contrast, not color).
+   Hero handled separately above (already ink-rich). */
+.how__title-lime,
+.demo__title-lime,
+.categories__title-lime,
+.testi__title-lime,
+.pricing-teaser__title-lime,
+.page-hero__title-lime,
+.cta-final__title-italic {
+  color: var(--ink-rich);
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  letter-spacing: -0.02em;
+}
+
+/* CTA-final band: the band bg is olive-rich (via alias), so ink-rich italic accent
+   reads as encre on olive paper. */
+
+/* Testimonials editorial quote — bigger, Fraunces variation settings */
+.testi-card__quote {
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+  letter-spacing: -0.01em;
+}
+.testi-card__quote-mark {
+  color: var(--olive-rich);
+  font-size: 1.4em;
+  line-height: 0;
 }
