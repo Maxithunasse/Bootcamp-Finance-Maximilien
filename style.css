@@ -606,33 +606,37 @@ ul { list-style: none; }
   overflow: hidden;
 }
 
-/* Lab network canvas (Mission 1 — particules moléculaires) */
-.lab-network {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+/* Botanica canvas (Mission 2 — filaments d'encre organiques, full viewport fixed) */
+.botanica-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.85;
+  mix-blend-mode: multiply;
 }
-/* Tous les autres enfants du hero passent au-dessus du canvas */
-.hero > *:not(.lab-network) {
+/* Tout le contenu principal reste au-dessus du canvas global.
+   On exclut explicitement les éléments qui ont déjà leur propre z-index
+   (sweep, scroll-progress, header sticky, ticker, live-activity, drawer)
+   pour ne pas écraser leur stacking. */
+.app-shell,
+.site-footer {
   position: relative;
   z-index: 1;
 }
-/* Gradient fade en bas du hero pour faire disparaître les particules */
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 180px;
-  background: linear-gradient(to bottom, transparent 0%, var(--ink-pure) 100%);
-  pointer-events: none;
-  z-index: 0;
+/* Désactiver si reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .botanica-canvas { display: none; }
 }
+/* Tous les enfants du hero passent au-dessus du contenu local (cursor trail etc.) */
+.hero > * {
+  position: relative;
+  z-index: 1;
+}
+/* (Removed) — Le gradient fade du hero a disparu : la continuité des filaments
+   Botanica à travers tout le viewport est désormais préférée. */
 
 /* Living lab · Mission 3 — Cursor trail lime */
 .cursor-trail {

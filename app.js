@@ -274,7 +274,6 @@
 
   function heroSection() {
     return el('section', { class: 'hero' }, [
-      el('canvas', { id: 'lab-network', class: 'lab-network', 'aria-hidden': 'true' }),
       el('div', { class: 'hero__container' }, [
         el('div', { class: 'hero__left' }, [
           el('span', { class: 'overline hero__overline' }, '· ENQUÊTE INDÉPENDANTE EN COURS ·'),
@@ -4124,11 +4123,7 @@
       routeTransitionTimeout = null;
     }
 
-    // Destroy lab network if leaving home (canvas still in DOM here)
-    if (labNetworkInstance) {
-      labNetworkInstance.destroy();
-      labNetworkInstance = null;
-    }
+    // Cursor trail is hero-scoped — destroy on every route change
     if (cursorTrailInstance) {
       cursorTrailInstance.destroy();
       cursorTrailInstance = null;
@@ -4145,7 +4140,6 @@
       if (pageId === 'home') {
         setTimeout(startHeroCycle, 0);
         setTimeout(function () {
-          labNetworkInstance = initLabNetwork();
           cursorTrailInstance = initCursorTrail();
         }, 50);
       }
@@ -4282,18 +4276,19 @@
   }
   window.skynova.initCounters = initCounters;
 
-  /* ---------- Living lab · Mission 1 — Particle network canvas ---------- */
-  class LabNetwork {
+  /* ---------- Apothecary · Mission 2 — Botanica organic ink filaments ---------- */
+  class Botanica {
     constructor(canvas) {
       this.canvas = canvas;
       this.ctx = canvas.getContext('2d');
-      this.particles = [];
-      this.mouse = { x: -1000, y: -1000 };
+      this.filaments = [];
+      this.mouse = { x: -1000, y: -1000, vx: 0, vy: 0 };
+      this.scrollProgress = 0;
       this.config = this.getConfig();
-      if (!this.config.particleCount) return; // reduced motion
+      if (!this.config.maxFilaments) return;
       this.resize();
-      this.init();
       this.bindEvents();
+      this.spawnInitialFilaments();
       this.animate();
     }
 
@@ -4301,133 +4296,198 @@
       const isMobile = window.innerWidth < 768;
       const isReducedMotion = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (isReducedMotion) return { particleCount: 0 };
+      if (isReducedMotion) return { maxFilaments: 0 };
       return {
-        particleCount: isMobile ? 35 : 70,
-        maxDistance: isMobile ? 110 : 160,
-        maxSpeed: 0.4,
-        particleRadius: 1.8,
-        lineOpacity: 0.18,
-        particleOpacity: 0.7,
-        mouseInfluenceRadius: 180,
-        mouseRepelForce: 0.04
+        maxFilaments: isMobile ? 18 : 38,
+        growthSpeed: isMobile ? 1.8 : 2.4,
+        baseOpacity: 0.15,
+        lineWidth: 0.9,
+        branchProbability: 0.35,
+        maxBranches: 3,
+        filamentLifespan: 280,
+        mouseInfluenceRadius: 140,
+        inkColor: '31, 27, 22' // --ink-rich
       };
     }
 
     resize() {
-      const rect = this.canvas.parentElement.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      this.canvas.width = rect.width * dpr;
-      this.canvas.height = rect.height * dpr;
-      this.canvas.style.width = rect.width + 'px';
-      this.canvas.style.height = rect.height + 'px';
-      this.ctx.setTransform(1, 0, 0, 1, 0, 0); // reset before scale
+      this.canvas.width = window.innerWidth * dpr;
+      this.canvas.height = window.innerHeight * dpr;
+      this.canvas.style.width = window.innerWidth + 'px';
+      this.canvas.style.height = window.innerHeight + 'px';
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.scale(dpr, dpr);
-      this.width = rect.width;
-      this.height = rect.height;
-    }
-
-    init() {
-      this.particles = [];
-      for (let i = 0; i < this.config.particleCount; i++) {
-        this.particles.push({
-          x: Math.random() * this.width,
-          y: Math.random() * this.height,
-          vx: (Math.random() - 0.5) * this.config.maxSpeed,
-          vy: (Math.random() - 0.5) * this.config.maxSpeed,
-          radius: this.config.particleRadius + Math.random() * 0.8
-        });
-      }
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
     }
 
     bindEvents() {
-      this.handleResize = () => { this.resize(); this.init(); };
+      this.handleResize = () => this.resize();
       window.addEventListener('resize', this.handleResize);
 
       this.handleMouseMove = (e) => {
-        const rect = this.canvas.getBoundingClientRect();
-        this.mouse.x = e.clientX - rect.left;
-        this.mouse.y = e.clientY - rect.top;
+        this.mouse.vx = e.clientX - this.mouse.x;
+        this.mouse.vy = e.clientY - this.mouse.y;
+        this.mouse.x = e.clientX;
+        this.mouse.y = e.clientY;
       };
-      this.handleMouseLeave = () => {
-        this.mouse.x = -1000;
-        this.mouse.y = -1000;
+      window.addEventListener('mousemove', this.handleMouseMove);
+
+      this.handleScroll = () => {
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        this.scrollProgress = docHeight > 0 ? Math.min(1, window.scrollY / docHeight) : 0;
       };
-      const parent = this.canvas.parentElement;
-      if (parent) {
-        parent.addEventListener('mousemove', this.handleMouseMove);
-        parent.addEventListener('mouseleave', this.handleMouseLeave);
+      window.addEventListener('scroll', this.handleScroll, { passive: true });
+    }
+
+    spawnInitialFilaments() {
+      const startCount = Math.floor(this.config.maxFilaments * 0.6);
+      for (let i = 0; i < startCount; i++) {
+        this.filaments.push(this.createFilament());
       }
     }
 
+    createFilament(parentEnd, depth) {
+      depth = depth || 0;
+      const startX = parentEnd ? parentEnd.x : Math.random() * this.width;
+      const startY = parentEnd ? parentEnd.y : Math.random() * this.height;
+
+      const baseAngle = parentEnd
+        ? parentEnd.angle + (Math.random() - 0.5) * 1.2
+        : Math.random() * Math.PI * 2;
+      const length = 80 + Math.random() * 180;
+
+      return {
+        x0: startX, y0: startY,
+        x1: startX + Math.cos(baseAngle) * length * 0.3,
+        y1: startY + Math.sin(baseAngle) * length * 0.3 - 20,
+        x2: startX + Math.cos(baseAngle + 0.3) * length * 0.7,
+        y2: startY + Math.sin(baseAngle + 0.3) * length * 0.7 - 30,
+        x3: startX + Math.cos(baseAngle + 0.6) * length,
+        y3: startY + Math.sin(baseAngle + 0.6) * length,
+
+        angle: baseAngle,
+        depth: depth,
+        maxDepth: 2 + Math.floor(Math.random() * 2),
+
+        progress: 0,
+        growthRate: this.config.growthSpeed / length,
+        age: 0,
+        lifespan: this.config.filamentLifespan + Math.random() * 100,
+
+        thickness: this.config.lineWidth * (1 - depth * 0.2),
+        branched: false,
+        dying: false
+      };
+    }
+
+    getBezierPoint(f, t) {
+      const u = 1 - t;
+      const tt = t * t;
+      const uu = u * u;
+      const uuu = uu * u;
+      const ttt = tt * t;
+      return {
+        x: uuu * f.x0 + 3 * uu * t * f.x1 + 3 * u * tt * f.x2 + ttt * f.x3,
+        y: uuu * f.y0 + 3 * uu * t * f.y1 + 3 * u * tt * f.y2 + ttt * f.y3
+      };
+    }
+
     update() {
-      this.particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
+      const liveFilaments = [];
 
-        if (p.x < 0 || p.x > this.width) p.vx *= -1;
-        if (p.y < 0 || p.y > this.height) p.vy *= -1;
-        p.x = Math.max(0, Math.min(this.width, p.x));
-        p.y = Math.max(0, Math.min(this.height, p.y));
+      this.filaments.forEach(f => {
+        if (f.progress < 1) {
+          f.progress = Math.min(1, f.progress + f.growthRate);
 
-        const dx = p.x - this.mouse.x;
-        const dy = p.y - this.mouse.y;
+          if (!f.branched && f.progress > 0.5 &&
+              f.depth < f.maxDepth &&
+              Math.random() < this.config.branchProbability) {
+            f.branched = true;
+            const branchEnd = this.getBezierPoint(f, f.progress);
+            branchEnd.angle = f.angle;
+            const branchCount = 1 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < branchCount; i++) {
+              if (this.filaments.length + liveFilaments.length < this.config.maxFilaments) {
+                liveFilaments.push(this.createFilament(branchEnd, f.depth + 1));
+              }
+            }
+          }
+        } else {
+          f.age++;
+          if (f.age > f.lifespan * 0.7) f.dying = true;
+        }
+
+        const center = this.getBezierPoint(f, f.progress * 0.5);
+        const dx = center.x - this.mouse.x;
+        const dy = center.y - this.mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < this.config.mouseInfluenceRadius && dist > 0) {
-          const force = (1 - dist / this.config.mouseInfluenceRadius) * this.config.mouseRepelForce;
-          p.vx += (dx / dist) * force;
-          p.vy += (dy / dist) * force;
+        if (dist < this.config.mouseInfluenceRadius) {
+          const influence = 1 - dist / this.config.mouseInfluenceRadius;
+          f.thickness = this.config.lineWidth * (1 + influence * 0.8);
+        } else {
+          f.thickness = this.config.lineWidth * (1 - f.depth * 0.2);
         }
 
-        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        const maxSpeed = this.config.maxSpeed * 2;
-        if (speed > maxSpeed) {
-          p.vx = (p.vx / speed) * maxSpeed;
-          p.vy = (p.vy / speed) * maxSpeed;
-        }
-        p.vx *= 0.995;
-        p.vy *= 0.995;
-        if (Math.abs(p.vx) < 0.05) p.vx += (Math.random() - 0.5) * 0.1;
-        if (Math.abs(p.vy) < 0.05) p.vy += (Math.random() - 0.5) * 0.1;
+        if (f.age < f.lifespan) liveFilaments.push(f);
       });
+
+      this.filaments = liveFilaments;
+
+      const targetCount = this.getTargetFilamentCount();
+      while (this.filaments.length < targetCount) {
+        this.filaments.push(this.createFilament());
+      }
+    }
+
+    getTargetFilamentCount() {
+      if (this.scrollProgress < 0.2) return this.config.maxFilaments;
+      if (this.scrollProgress < 0.6) return Math.floor(this.config.maxFilaments * 0.5);
+      return Math.floor(this.config.maxFilaments * 0.35);
+    }
+
+    getCurrentOpacity() {
+      if (this.scrollProgress < 0.2) return this.config.baseOpacity;
+      if (this.scrollProgress < 0.6) return this.config.baseOpacity * 0.5;
+      return this.config.baseOpacity * 0.3;
     }
 
     draw() {
       this.ctx.clearRect(0, 0, this.width, this.height);
+      const globalOpacity = this.getCurrentOpacity();
 
-      for (let i = 0; i < this.particles.length; i++) {
-        for (let j = i + 1; j < this.particles.length; j++) {
-          const p1 = this.particles[i];
-          const p2 = this.particles[j];
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < this.config.maxDistance) {
-            const opacity = (1 - dist / this.config.maxDistance) * this.config.lineOpacity;
-            this.ctx.strokeStyle = 'rgba(212, 255, 58, ' + opacity + ')';
-            this.ctx.lineWidth = 0.6;
-            this.ctx.beginPath();
-            this.ctx.moveTo(p1.x, p1.y);
-            this.ctx.lineTo(p2.x, p2.y);
-            this.ctx.stroke();
-          }
+      this.filaments.forEach(f => {
+        const fadeIn = Math.min(1, f.progress * 4);
+        const fadeOut = f.dying
+          ? Math.max(0, 1 - (f.age - f.lifespan * 0.7) / (f.lifespan * 0.3))
+          : 1;
+        const opacity = globalOpacity * fadeIn * fadeOut;
+        if (opacity < 0.01) return;
+
+        this.ctx.strokeStyle = 'rgba(' + this.config.inkColor + ', ' + opacity + ')';
+        this.ctx.lineWidth = f.thickness;
+        this.ctx.lineCap = 'round';
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(f.x0, f.y0);
+
+        const steps = 24;
+        const visibleSteps = Math.floor(steps * f.progress);
+        for (let i = 1; i <= visibleSteps; i++) {
+          const t = i / steps;
+          const pt = this.getBezierPoint(f, t);
+          this.ctx.lineTo(pt.x, pt.y);
         }
-      }
+        this.ctx.stroke();
 
-      this.particles.forEach(p => {
-        const gradient = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 4);
-        gradient.addColorStop(0, 'rgba(212, 255, 58, ' + this.config.particleOpacity + ')');
-        gradient.addColorStop(0.4, 'rgba(212, 255, 58, 0.15)');
-        gradient.addColorStop(1, 'rgba(212, 255, 58, 0)');
-        this.ctx.fillStyle = gradient;
-        this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.radius * 4, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        this.ctx.fillStyle = 'rgba(212, 255, 58, 0.95)';
-        this.ctx.beginPath();
-        this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        this.ctx.fill();
+        if (f.progress < 1 && f.progress > 0.05) {
+          const tip = this.getBezierPoint(f, f.progress);
+          this.ctx.fillStyle = 'rgba(' + this.config.inkColor + ', ' + (opacity * 1.5) + ')';
+          this.ctx.beginPath();
+          this.ctx.arc(tip.x, tip.y, f.thickness * 1.2, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
       });
     }
 
@@ -4439,21 +4499,19 @@
 
     destroy() {
       if (this.rafId) cancelAnimationFrame(this.rafId);
-      if (this.handleResize) window.removeEventListener('resize', this.handleResize);
-      if (this.canvas && this.canvas.parentElement) {
-        if (this.handleMouseMove) this.canvas.parentElement.removeEventListener('mousemove', this.handleMouseMove);
-        if (this.handleMouseLeave) this.canvas.parentElement.removeEventListener('mouseleave', this.handleMouseLeave);
-      }
+      if (this.handleResize)    window.removeEventListener('resize', this.handleResize);
+      if (this.handleMouseMove) window.removeEventListener('mousemove', this.handleMouseMove);
+      if (this.handleScroll)    window.removeEventListener('scroll', this.handleScroll);
     }
   }
 
-  let labNetworkInstance = null;
-  function initLabNetwork() {
-    const canvas = document.getElementById('lab-network');
-    if (!canvas) return null;
-    return new LabNetwork(canvas);
+  let botanicaInstance = null;
+  function initBotanica() {
+    const canvas = document.getElementById('botanica');
+    if (!canvas || botanicaInstance) return;
+    botanicaInstance = new Botanica(canvas);
   }
-  window.skynova.LabNetwork = LabNetwork;
+  window.skynova.Botanica = Botanica;
 
   /* ---------- Living lab · Mission 3 — Cursor trail lime in hero ---------- */
   class CursorTrail {
@@ -4705,6 +4763,7 @@
     setupBurger();
     setupScrollProgress();
     initMagneticButtons(document);
+    initBotanica();
     route();
   }
   if (document.readyState === 'loading') {
