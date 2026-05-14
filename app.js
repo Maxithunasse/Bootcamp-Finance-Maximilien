@@ -4590,6 +4590,12 @@
 
       btn.addEventListener('mousemove', function (e) {
         const rect = btn.getBoundingClientRect();
+        // Mission 5 — glow position via CSS vars (% relative to button box)
+        const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+        const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+        btn.style.setProperty('--mouse-x', xPct + '%');
+        btn.style.setProperty('--mouse-y', yPct + '%');
+        // Mission 6 — magnetic translate
         const x = clamp((e.clientX - rect.left - rect.width / 2) * intensity, maxX);
         const y = clamp((e.clientY - rect.top - rect.height / 2) * intensity, maxY);
         btn.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(1.02)';
@@ -4597,6 +4603,8 @@
 
       btn.addEventListener('mouseleave', function () {
         btn.style.transform = '';
+        btn.style.setProperty('--mouse-x', '50%');
+        btn.style.setProperty('--mouse-y', '50%');
       });
     });
   }
