@@ -5867,7 +5867,7 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
   background-position: center;
   will-change: transform;
   transform: translate3d(0, 0, 0);
-  filter: contrast(1.05) saturate(0.75) brightness(1.05) sepia(0.08);
+  filter: contrast(1.05) saturate(0.7) brightness(1.05) sepia(0.10);
 }
 .parallax-hero-overlay {
   position: absolute;
@@ -5891,6 +5891,25 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
   align-items: center;
   justify-content: center;
   margin: 64px 0;
+  /* Fade-in subtil au scroll-into-view (in-view class ajoutée par JS) */
+  opacity: 0;
+  transition: opacity 1200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.parallax-divider.in-view {
+  opacity: 1;
+}
+/* Vignette subtile sur les bords pour profondeur éditoriale */
+.parallax-divider::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(31, 27, 22, 0.15) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
 }
 .parallax-divider-1 { height: 60vh; }
 .parallax-divider-2 { height: 70vh; }
@@ -5905,7 +5924,7 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
   background-position: center;
   will-change: transform;
   transform: translate3d(0, 0, 0);
-  filter: contrast(1.02) saturate(0.75) brightness(1.05) sepia(0.08);
+  filter: contrast(1.02) saturate(0.7) brightness(1.05) sepia(0.10);
 }
 .parallax-divider-1 .parallax-divider-image {
   background-image: url('https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=2400&q=85');
@@ -5948,12 +5967,16 @@ body:not(:has(.app-shell > .auth)):not(:has(.app-shell > .onb)):not(:has(.app-sh
   letter-spacing: -0.01em;
 }
 
-/* Accessibilité : pas de transform si reduced-motion */
+/* Accessibilité : pas de transform si reduced-motion + dividers visibles direct */
 @media (prefers-reduced-motion: reduce) {
   .parallax-hero-image,
   .parallax-divider-image {
     transform: none !important;
     will-change: auto;
+  }
+  .parallax-divider {
+    opacity: 1;
+    transition: none;
   }
 }
 

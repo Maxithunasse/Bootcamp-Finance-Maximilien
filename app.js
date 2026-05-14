@@ -4346,6 +4346,9 @@
       this.ticking = false;
       this.disabled = false;
 
+      // Reveal observer fonctionne indépendamment du parallax (mobile/reduced-motion en bénéficient aussi)
+      this.setupReveal();
+
       const isMobile = window.innerWidth < 768;
       const isReduced = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -4357,6 +4360,24 @@
       if (this.elements.length === 0) return;
       this.bindEvents();
       this.update();
+    }
+
+    setupReveal() {
+      const dividers = document.querySelectorAll('.parallax-divider');
+      if (!dividers.length) return;
+      if (!('IntersectionObserver' in window)) {
+        dividers.forEach(function (d) { d.classList.add('in-view'); });
+        return;
+      }
+      this.dividerObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            this.dividerObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      dividers.forEach((d) => this.dividerObserver.observe(d));
     }
 
     scan() {
@@ -4408,6 +4429,9 @@
     destroy() {
       if (this.handleScroll) {
         window.removeEventListener('scroll', this.handleScroll);
+      }
+      if (this.dividerObserver) {
+        this.dividerObserver.disconnect();
       }
     }
   }
