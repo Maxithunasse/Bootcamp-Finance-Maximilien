@@ -2647,12 +2647,654 @@
         { author: 'Jeanne A.', rating: 4, weeks: 24, verified: false, helpful: 7,
           comment: "Boîte de 60 = 1 mois si 2 capsules/jour. C'est cher mais la qualité Nutripure est constante." }
       ]
+    },
+    /* ----- Phase 10 — 18 produits supplémentaires (30 total) ----- */
+    {
+      id: 'vtc', mark: 'VTC', brand: 'D-Lab', name: 'Vitamine C Liposomale', category: 'vitality',
+      price: 26.90, pricePerDose: '0,90 € / dose', servings: 30, activeDose: '1000 mg',
+      purity: 92, origin: 'France', certifications: ['ISO 22000', 'GMP'], additives: [],
+      badges: [{ label: 'Vitalité', tone: 'lime' }, { label: 'Immunité', tone: '' }],
+      description: "Vitamine C liposomale, encapsulation dans des phospholipides pour multiplier l'absorption par 3 vs ascorbate classique.",
+      scoreEfficacy: 89, scorePrice: 68,
+      breakdown: { dosage: 38, purity: 27, certif: 14, trace: 10 },
+      whyScore: [
+        "1000 mg par dose, dose efficace pour soutien immunitaire (vs 80 mg AJR de maintenance)",
+        "Forme liposomale : absorption 3× supérieure aux ascorbates classiques",
+        "Pureté 92 % : pas d'agent d'enrobage controversé",
+        "Origine France, certifications ISO 22000 + GMP"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Acide L-ascorbique liposomé', dose: '1000 mg' },
+          { name: 'Phospholipides de tournesol (lécithine)', dose: '500 mg' },
+          { name: 'Glycérine végétale', dose: '100 mg' }
+        ],
+        perDose: [
+          { label: 'Vitamine C', value: '1000 mg' },
+          { label: 'AJR couvert', value: '1250 %' },
+          { label: 'Forme', value: 'Liposomale' },
+          { label: 'Absorption', value: 'x 3' }
+        ]
+      },
+      reviews: [
+        { author: 'Sophie B.', rating: 5, weeks: 8, verified: true, helpful: 14,
+          comment: "Pris en cure d'attaque sur 8 semaines. Aucun trouble digestif contrairement à la vitamine C classique." },
+        { author: 'Thomas D.', rating: 4, weeks: 12, verified: false, helpful: 7,
+          comment: "Bon produit, format liquide pratique. Cher mais ça vaut le coup en hiver." }
+      ]
+    },
+    {
+      id: 'znc', mark: 'ZNC', brand: 'Nutripure', name: 'Zinc Bisglycinate', category: 'vitality',
+      price: 14.90, pricePerDose: '0,12 € / dose', servings: 120, activeDose: '15 mg',
+      purity: 90, origin: 'France', certifications: ['Albion TRAACS', 'ISO 22000'], additives: [],
+      badges: [{ label: 'Vitalité', tone: 'lime' }],
+      description: "Zinc bisglycinate Albion, la forme chélatée la mieux assimilée. 15 mg par dose, couvre les besoins quotidiens.",
+      scoreEfficacy: 88, scorePrice: 95,
+      breakdown: { dosage: 36, purity: 27, certif: 16, trace: 9 },
+      whyScore: [
+        "15 mg par dose, 150 % des AJR sans dépasser la limite ANSES (25 mg)",
+        "Forme bisglycinate Albion TRAACS : assimilation supérieure aux oxydes/sulfates",
+        "Pureté 90 % avec gélule pullulane végétale",
+        "Score prix excellent : 0,12 € / dose, dans le top 5 % catégorie"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Zinc bisglycinate Albion TRAACS', dose: '75 mg' },
+          { name: 'Gélule pullulane', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Zinc élément', value: '15 mg' },
+          { label: 'Forme', value: 'Bisglycinate' },
+          { label: 'AJR couvert', value: '150 %' },
+          { label: 'Source', value: 'Albion' }
+        ]
+      },
+      reviews: [
+        { author: 'Léo M.', rating: 5, weeks: 16, verified: true, helpful: 12,
+          comment: "Cure tous les hivers, prix imbattable. Aucun arrière-goût métallique." },
+        { author: 'Inès R.', rating: 5, weeks: 8, verified: false, helpful: 6,
+          comment: "Acné régulée après 6 semaines. Format gélule pratique." }
+      ]
+    },
+    {
+      id: 'fer', mark: 'FER', brand: 'Apyforme', name: 'Fer Bisglycinate', category: 'vitality',
+      price: 18.90, pricePerDose: '0,32 € / dose', servings: 60, activeDose: '14 mg',
+      purity: 88, origin: 'France', certifications: ['Albion TRAACS', 'Vegan'], additives: [],
+      badges: [{ label: 'Vitalité', tone: 'lime' }, { label: 'Femme', tone: '' }],
+      description: "Fer bisglycinate Albion 14 mg, dose AJR adaptée à la supplémentation féminine. Vegan, sans gluten.",
+      scoreEfficacy: 85, scorePrice: 78,
+      breakdown: { dosage: 34, purity: 26, certif: 15, trace: 10 },
+      whyScore: [
+        "14 mg de fer élément par dose, 100 % des AJR femme adulte",
+        "Bisglycinate Albion : assimilation supérieure et tolérance digestive",
+        "Vegan certifié + Made in France traçable",
+        "Sans constipation aux retours utilisateurs (vs fumarate/sulfate)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Fer bisglycinate Albion TRAACS', dose: '70 mg' },
+          { name: 'Vitamine C ascorbique (cofacteur)', dose: '40 mg' },
+          { name: 'Gélule HPMC végétale', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Fer élément', value: '14 mg' },
+          { label: 'Vitamine C', value: '40 mg' },
+          { label: 'AJR femme', value: '100 %' },
+          { label: 'Forme', value: 'Bisglycinate' }
+        ]
+      },
+      reviews: [
+        { author: 'Camille S.', rating: 5, weeks: 12, verified: true, helpful: 17,
+          comment: "Anémie ferriprive post-grossesse. Ferritine remontée de 14 à 42 ng/mL en 3 mois. Aucun trouble digestif." },
+        { author: 'Élodie F.', rating: 4, weeks: 8, verified: true, helpful: 9,
+          comment: "Cure semestrielle. Vitamine C ajoutée intéressante pour l'absorption." }
+      ]
+    },
+    {
+      id: 'val', mark: 'VAL', brand: 'Solgar', name: 'Valériane Standardisée', category: 'sleep',
+      price: 19.90, pricePerDose: '0,66 € / dose', servings: 30, activeDose: '500 mg',
+      purity: 85, origin: 'États-Unis', certifications: ['Kosher', 'GMP'], additives: ['Stéarate de magnésium'],
+      badges: [{ label: 'Sommeil', tone: 'mercury' }],
+      description: "Extrait sec de racine de valériane, standardisé à 0,8 % d'acides valéréniques. 500 mg par dose, prise 30 min avant le coucher.",
+      scoreEfficacy: 81, scorePrice: 72,
+      breakdown: { dosage: 32, purity: 23, certif: 12, trace: 14 },
+      whyScore: [
+        "500 mg d'extrait sec, dose validée par EMA pour l'endormissement léger",
+        "Standardisation 0,8 % acides valéréniques (principe actif quantifié)",
+        "Pénalité : présence de stéarate de magnésium en excipient",
+        "Origine États-Unis non détaillée à la ferme"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Extrait sec de racine de valériane', dose: '500 mg' },
+          { name: 'Stéarate de magnésium', dose: '15 mg' },
+          { name: 'Capsule gélatine bovine', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Valériane', value: '500 mg' },
+          { label: 'Acides valéréniques', value: '4 mg (0,8 %)' },
+          { label: 'Forme', value: 'Extrait sec' },
+          { label: 'Délai d\'action', value: '30-60 min' }
+        ]
+      },
+      reviews: [
+        { author: 'Bertrand T.', rating: 4, weeks: 6, verified: true, helpful: 8,
+          comment: "Efficace en complément d'une mauvaise hygiène de sommeil. Odeur forte mais s'oublie une fois la gélule avalée." },
+        { author: 'Aurélie P.', rating: 3, weeks: 4, verified: false, helpful: 3,
+          comment: "Effet modéré. Je préfère désormais l'ashwagandha selon les recommandations Skynova." }
+      ]
+    },
+    {
+      id: 'gab', mark: 'GAB', brand: 'Nutrimea', name: 'GABA Pure 500 mg', category: 'sleep',
+      price: 17.50, pricePerDose: '0,29 € / dose', servings: 60, activeDose: '500 mg',
+      purity: 89, origin: 'Japon', certifications: ['Pharma-GABA', 'GMP'], additives: [],
+      badges: [{ label: 'Sommeil', tone: 'mercury' }, { label: 'Stress', tone: '' }],
+      description: "GABA naturel issu de la fermentation Pharma-GABA (Lactobacillus hilgardii). 500 mg par dose, effet relaxant rapide.",
+      scoreEfficacy: 78, scorePrice: 84,
+      breakdown: { dosage: 30, purity: 24, certif: 16, trace: 8 },
+      whyScore: [
+        "500 mg de GABA Pharma-GABA fermenté, vs GABA synthétique générique",
+        "Pureté 89 % : pas d'excipient controversé",
+        "Pharma-GABA + GMP : certifications spécifiques de la matière première",
+        "Pénalité dosage : limite assimilation BHE débattue scientifiquement"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'GABA Pharma-GABA (fermentation Lactobacillus)', dose: '500 mg' },
+          { name: 'Gélule HPMC végétale', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'GABA', value: '500 mg' },
+          { label: 'Source', value: 'Pharma-GABA' },
+          { label: 'Origine', value: 'Fermentation' },
+          { label: 'Délai', value: '30 min' }
+        ]
+      },
+      reviews: [
+        { author: 'Pierre L.', rating: 4, weeks: 4, verified: true, helpful: 6,
+          comment: "Effet calmant net en 30 min. Je le prends en cas de stress aigu, pas en routine." },
+        { author: 'Marie K.', rating: 4, weeks: 8, verified: false, helpful: 4,
+          comment: "Bon prix au gramme, à utiliser ponctuellement plutôt qu'en fond." }
+      ]
+    },
+    {
+      id: 'enz', mark: 'ENZ', brand: 'Now Foods', name: 'Enzymes Digestives Complètes', category: 'digestion',
+      price: 22.50, pricePerDose: '0,30 € / dose', servings: 75, activeDose: '1 capsule',
+      purity: 86, origin: 'États-Unis', certifications: ['GMP', 'Kosher'], additives: ['Stéarate de magnésium'],
+      badges: [{ label: 'Digestion', tone: 'lime' }],
+      description: "Complexe 9 enzymes digestives (amylase, lipase, protéase, lactase, cellulase…) pour soutenir la digestion des repas lourds.",
+      scoreEfficacy: 79, scorePrice: 81,
+      breakdown: { dosage: 30, purity: 24, certif: 12, trace: 13 },
+      whyScore: [
+        "9 enzymes complémentaires (protéase, lipase, amylase, lactase, cellulase…)",
+        "Concentration totale 200 mg, dose unique par repas",
+        "Pénalité : stéarate de magnésium présent comme glidant",
+        "Origine États-Unis non détaillée à la souche"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Complexe enzymatique (9 enzymes)', dose: '200 mg' },
+          { name: 'Bromélaïne', dose: '50 mg' },
+          { name: 'Stéarate de magnésium', dose: '10 mg' }
+        ],
+        perDose: [
+          { label: 'Enzymes', value: '9 souches' },
+          { label: 'Complexe', value: '200 mg' },
+          { label: 'Bromélaïne', value: '50 mg' },
+          { label: 'Capsule', value: 'Végétale' }
+        ]
+      },
+      reviews: [
+        { author: 'Jean-Marc V.', rating: 4, weeks: 6, verified: true, helpful: 10,
+          comment: "Pris avant les repas copieux. Ballonnements en nette baisse, plus de somnolence post-repas." },
+        { author: 'Sandra B.', rating: 4, weeks: 4, verified: false, helpful: 5,
+          comment: "Utile en voyage avec changements alimentaires. À avoir dans la trousse." }
+      ]
+    },
+    {
+      id: 'cha', mark: 'CHA', brand: 'Nutrimea', name: 'Charbon Végétal Activé', category: 'digestion',
+      price: 12.90, pricePerDose: '0,11 € / dose', servings: 120, activeDose: '500 mg',
+      purity: 95, origin: 'France', certifications: ['AB', 'EU Organic'], additives: [],
+      badges: [{ label: 'Digestion', tone: 'lime' }],
+      description: "Charbon végétal activé issu de coques de noix de coco bio. 500 mg par dose, absorbe les gaz intestinaux et toxines.",
+      scoreEfficacy: 82, scorePrice: 95,
+      breakdown: { dosage: 30, purity: 28, certif: 14, trace: 10 },
+      whyScore: [
+        "500 mg de charbon activé par dose, dose efficace validée par l'EFSA pour les gaz",
+        "Pureté 95 % issue de coques de noix de coco bio",
+        "AB + EU Organic + origine France traçable",
+        "Score prix imbattable : 0,11 € / dose"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Charbon végétal activé bio (coque de noix de coco)', dose: '500 mg' },
+          { name: 'Gélule HPMC végétale', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Charbon activé', value: '500 mg' },
+          { label: 'Source', value: 'Noix de coco bio' },
+          { label: 'Pouvoir absorbant', value: '950 m²/g' },
+          { label: 'Forme', value: 'Activé' }
+        ]
+      },
+      reviews: [
+        { author: 'Élodie K.', rating: 5, weeks: 8, verified: true, helpful: 11,
+          comment: "Imbattable contre les ballonnements post-repas. Goût neutre, pas de coloration des dents." },
+        { author: 'Vincent R.', rating: 4, weeks: 12, verified: false, helpful: 6,
+          comment: "Attention à espacer des médicaments de 2h (interaction absorbante)." }
+      ]
+    },
+    {
+      id: 'bio', mark: 'BIO', brand: 'Solgar', name: 'Biotine 10 000 µg', category: 'beauty',
+      price: 16.50, pricePerDose: '0,28 € / dose', servings: 60, activeDose: '10 000 µg',
+      purity: 84, origin: 'États-Unis', certifications: ['Kosher', 'GMP'], additives: ['Stéarate de magnésium'],
+      badges: [{ label: 'Beauté', tone: 'lime' }, { label: 'Cheveux', tone: '' }],
+      description: "Biotine (vitamine B8) à haut dosage 10 000 µg pour la croissance des cheveux et la santé de la peau.",
+      scoreEfficacy: 84, scorePrice: 82,
+      breakdown: { dosage: 38, purity: 22, certif: 12, trace: 12 },
+      whyScore: [
+        "10 000 µg par dose, dose haute validée pour cure cheveux/ongles",
+        "Pureté 84 % avec présence de stéarate (pénalité)",
+        "Origine États-Unis traçable à Carlstadt (NJ)",
+        "Sans gluten, sans soja, sans levure"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Biotine (D-biotine)', dose: '10 000 µg' },
+          { name: 'Cellulose microcristalline', dose: '180 mg' },
+          { name: 'Stéarate de magnésium', dose: '12 mg' }
+        ],
+        perDose: [
+          { label: 'Biotine', value: '10 000 µg' },
+          { label: 'AJR couvert', value: '20 000 %' },
+          { label: 'Forme', value: 'D-biotine' },
+          { label: 'Capsule', value: 'Végétale' }
+        ]
+      },
+      reviews: [
+        { author: 'Léna G.', rating: 5, weeks: 12, verified: true, helpful: 15,
+          comment: "Cheveux visiblement plus épais à 3 mois. Repousse plus rapide. Marque historique, confiance." },
+        { author: 'Marc B.', rating: 4, weeks: 8, verified: false, helpful: 7,
+          comment: "Bon produit mais le stéarate de magnésium est dommage à ce prix-là." }
+      ]
+    },
+    {
+      id: 'hya', mark: 'HYA', brand: 'D-Lab', name: 'Acide Hyaluronique 200 mg', category: 'beauty',
+      price: 32.90, pricePerDose: '1,10 € / dose', servings: 30, activeDose: '200 mg',
+      purity: 92, origin: 'France', certifications: ['Pharmacopée européenne', 'ISO 22000'], additives: [],
+      badges: [{ label: 'Beauté', tone: 'lime' }, { label: 'Peau', tone: '' }],
+      description: "Acide hyaluronique bas et haut poids moléculaire combinés. 200 mg par dose pour hydratation profonde et superficielle.",
+      scoreEfficacy: 81, scorePrice: 58,
+      breakdown: { dosage: 32, purity: 28, certif: 12, trace: 9 },
+      whyScore: [
+        "200 mg par dose, dose suprathérapeutique pour effet hydratation cutanée",
+        "Bas + haut poids moléculaire : couverture biologique complète",
+        "Made in France + Pharmacopée européenne (qualité pharma)",
+        "Pénalité prix : 1,10 € / dose, parmi les plus chers du marché"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Acide hyaluronique bas PM (50 kDa)', dose: '100 mg' },
+          { name: 'Acide hyaluronique haut PM (1500 kDa)', dose: '100 mg' },
+          { name: 'Gélule HPMC végétale', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'AH total', value: '200 mg' },
+          { label: 'Bas PM', value: '100 mg' },
+          { label: 'Haut PM', value: '100 mg' },
+          { label: 'Origine', value: 'France' }
+        ]
+      },
+      reviews: [
+        { author: 'Mathilde C.', rating: 5, weeks: 12, verified: true, helpful: 13,
+          comment: "Peau visiblement plus rebondie à 2 mois. Cher mais résultats au rendez-vous." },
+        { author: 'Karim L.', rating: 4, weeks: 8, verified: false, helpful: 5,
+          comment: "Bon produit pour les peaux matures. Le prix freine en routine." }
+      ]
+    },
+    {
+      id: 'ker', mark: 'KER', brand: 'Apyforme', name: 'Kératine + Silice', category: 'beauty',
+      price: 24.90, pricePerDose: '0,83 € / dose', servings: 30, activeDose: '500 mg',
+      purity: 88, origin: 'France', certifications: ['ISO 22000', 'Made in France'], additives: [],
+      badges: [{ label: 'Beauté', tone: 'lime' }, { label: 'Ongles', tone: '' }],
+      description: "Kératine hydrolysée + silice organique de bambou. Cure cheveux ongles 30 jours, 500 mg par dose.",
+      scoreEfficacy: 79, scorePrice: 68,
+      breakdown: { dosage: 28, purity: 25, certif: 14, trace: 12 },
+      whyScore: [
+        "500 mg de kératine hydrolysée + 80 mg silice bambou par dose",
+        "Combinaison synergique cheveux/ongles validée études cliniques",
+        "Made in France ISO 22000",
+        "Pénalité dosage : kératine seule sous-dosée vs études (≥ 700 mg/jour)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Kératine hydrolysée', dose: '500 mg' },
+          { name: 'Silice de bambou (70 % silicium)', dose: '80 mg' },
+          { name: 'Gélule HPMC', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Kératine', value: '500 mg' },
+          { label: 'Silice', value: '80 mg' },
+          { label: 'Silicium', value: '56 mg' },
+          { label: 'Cure', value: '30 jours' }
+        ]
+      },
+      reviews: [
+        { author: 'Aïcha M.', rating: 4, weeks: 8, verified: true, helpful: 8,
+          comment: "Ongles visiblement plus solides. Cheveux moins cassants. Cure de 2 mois recommandée minimum." },
+        { author: 'Anne D.', rating: 4, weeks: 12, verified: false, helpful: 4,
+          comment: "Bon produit en cure printemps/automne. Marque française appréciable." }
+      ]
+    },
+    {
+      id: 'glu', mark: 'GLU', brand: 'Yves Ponroy', name: 'Glucosamine 1500 mg', category: 'joints',
+      price: 19.90, pricePerDose: '0,66 € / dose', servings: 30, activeDose: '1500 mg',
+      purity: 87, origin: 'France', certifications: ['Crustacés tracé', 'ISO 22000'], additives: [],
+      badges: [{ label: 'Articulaire', tone: 'lime' }],
+      description: "Glucosamine sulfate 1500 mg en dose unique journalière. Issue de la chitine de crustacés tracée.",
+      scoreEfficacy: 82, scorePrice: 74,
+      breakdown: { dosage: 34, purity: 26, certif: 12, trace: 10 },
+      whyScore: [
+        "1500 mg par dose, dose validée EMA pour l'arthrose modérée",
+        "Sulfate (forme la plus étudiée, > 200 essais cliniques)",
+        "Origine crustacés tracée filière France",
+        "Sans certification bio (origine animale marine)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Glucosamine sulfate (chitine de crustacés)', dose: '1500 mg' },
+          { name: 'Gélule gélatine bovine', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Glucosamine', value: '1500 mg' },
+          { label: 'Forme', value: 'Sulfate' },
+          { label: 'Source', value: 'Crustacés FR' },
+          { label: 'Dose unique', value: 'Oui' }
+        ]
+      },
+      reviews: [
+        { author: 'Pierre G.', rating: 4, weeks: 24, verified: true, helpful: 16,
+          comment: "Arthrose genou. Effet net à 3 mois sur la mobilité. Yves Ponroy reste une référence en pharmacie." },
+        { author: 'Geneviève F.', rating: 5, weeks: 16, verified: false, helpful: 9,
+          comment: "Pris quotidiennement depuis 1 an. Crises moins fréquentes." }
+      ]
+    },
+    {
+      id: 'msm', mark: 'MSM', brand: 'Now Foods', name: 'MSM Pur 1500 mg', category: 'joints',
+      price: 18.50, pricePerDose: '0,31 € / dose', servings: 60, activeDose: '1500 mg',
+      purity: 99, origin: 'États-Unis', certifications: ['OptiMSM', 'GMP'], additives: [],
+      badges: [{ label: 'Articulaire', tone: 'lime' }, { label: 'Inflammation', tone: '' }],
+      description: "MSM (méthylsulfonylméthane) OptiMSM, la forme la plus pure du marché. 1500 mg par dose pour soutien articulaire.",
+      scoreEfficacy: 78, scorePrice: 85,
+      breakdown: { dosage: 32, purity: 28, certif: 12, trace: 6 },
+      whyScore: [
+        "1500 mg de MSM par dose, dose validée pour l'inflammation chronique",
+        "Pureté 99 % OptiMSM (marque brevetée Bergstrom)",
+        "Sans additif controversé, capsule pure",
+        "Pénalité origine : États-Unis sans traçabilité au producteur"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'MSM OptiMSM (méthylsulfonylméthane)', dose: '1500 mg' },
+          { name: 'Gélule HPMC végétale', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'MSM', value: '1500 mg' },
+          { label: 'Source', value: 'OptiMSM' },
+          { label: 'Pureté', value: '99,9 %' },
+          { label: 'Soufre bio', value: '510 mg' }
+        ]
+      },
+      reviews: [
+        { author: 'Marc R.', rating: 4, weeks: 12, verified: true, helpful: 9,
+          comment: "Pris en complément de la curcumine. Synergie nette sur les douleurs cervicales." },
+        { author: 'Hélène M.', rating: 4, weeks: 8, verified: false, helpful: 5,
+          comment: "Bon rapport qualité-prix, surtout en combo avec un autre actif articulaire." }
+      ]
+    },
+    {
+      id: 'ct2', mark: 'CT2', brand: 'Nutripure', name: 'Collagène Type II UC-II', category: 'joints',
+      price: 29.90, pricePerDose: '1,00 € / dose', servings: 30, activeDose: '40 mg',
+      purity: 95, origin: 'États-Unis', certifications: ['UC-II', 'GMP'], additives: [],
+      badges: [{ label: 'Articulaire', tone: 'lime' }, { label: 'Cartilage', tone: '' }],
+      description: "Collagène Type II non dénaturé UC-II. 40 mg par dose, dose efficace prouvée pour le cartilage articulaire.",
+      scoreEfficacy: 87, scorePrice: 65,
+      breakdown: { dosage: 36, purity: 27, certif: 14, trace: 10 },
+      whyScore: [
+        "40 mg UC-II par dose, dose efficace cliniquement validée (vs 1500 mg de glucosamine)",
+        "Type II non dénaturé : action immuno-modulatrice ciblée cartilage",
+        "UC-II trademark + GMP : qualité contrôlée Lonza",
+        "Pénalité prix : 1 €/dose vs 0,66 € glucosamine"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Collagène natif Type II UC-II', dose: '40 mg' },
+          { name: 'Gélule HPMC', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'UC-II', value: '40 mg' },
+          { label: 'Collagène actif', value: '10 mg' },
+          { label: 'Type', value: 'II non dénaturé' },
+          { label: 'Source', value: 'Cartilage poulet' }
+        ]
+      },
+      reviews: [
+        { author: 'Brigitte C.', rating: 5, weeks: 16, verified: true, helpful: 14,
+          comment: "Arthrose des doigts (couture). Souplesse retrouvée à 4 mois. Dose minuscule, efficacité maximale." },
+        { author: 'Patrick V.', rating: 4, weeks: 12, verified: false, helpful: 7,
+          comment: "Coût élevé mais 40 mg/jour = boîte qui dure. Score Skynova mérité." }
+      ]
+    },
+    {
+      id: 'bca', mark: 'BCA', brand: 'MyProtein', name: 'BCAA 2:1:1', category: 'sport',
+      price: 21.90, pricePerDose: '0,55 € / dose', servings: 40, activeDose: '7 g',
+      purity: 92, origin: 'Royaume-Uni', certifications: ['Informed Sport', 'GMP'], additives: [],
+      badges: [{ label: 'Sport', tone: 'lime' }, { label: 'Récupération', tone: '' }],
+      description: "BCAA ratio 2:1:1 (leucine/isoleucine/valine). 7 g par dose pour soutenir la récupération musculaire post-entraînement.",
+      scoreEfficacy: 84, scorePrice: 82,
+      breakdown: { dosage: 34, purity: 26, certif: 16, trace: 8 },
+      whyScore: [
+        "7 g par dose dont 3,5 g de leucine, atteint le seuil d'activation mTOR",
+        "Ratio 2:1:1 validé scientifiquement (vs 4:1:1 ou 8:1:1 marketing)",
+        "Informed Sport (zéro contamination) + GMP",
+        "Origine Royaume-Uni, fabricant tracé"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'L-Leucine instantanée', dose: '3,5 g' },
+          { name: 'L-Isoleucine', dose: '1,75 g' },
+          { name: 'L-Valine', dose: '1,75 g' },
+          { name: 'Arôme naturel + édulcorant sucralose', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'BCAA totaux', value: '7 g' },
+          { label: 'Leucine', value: '3,5 g' },
+          { label: 'Ratio', value: '2:1:1' },
+          { label: 'Calories', value: '28 kcal' }
+        ]
+      },
+      reviews: [
+        { author: 'Anthony L.', rating: 4, weeks: 8, verified: true, helpful: 11,
+          comment: "Pris intra-entrainement. Récupération améliorée, courbatures J+1 réduites. Bon rapport prix." },
+        { author: 'Inès B.', rating: 4, weeks: 12, verified: false, helpful: 5,
+          comment: "Goût citron correct. Préférable à la whey en cas d'estomac sensible." }
+      ]
+    },
+    {
+      id: 'bal', mark: 'BAL', brand: 'Nutrimuscle', name: 'Beta-Alanine Carnosyn', category: 'sport',
+      price: 27.90, pricePerDose: '0,46 € / dose', servings: 60, activeDose: '3 g',
+      purity: 99, origin: 'États-Unis', certifications: ['CarnoSyn', 'Cologne List'], additives: [],
+      badges: [{ label: 'Sport', tone: 'lime' }, { label: 'Endurance', tone: '' }],
+      description: "Beta-alanine CarnoSyn brevetée. 3 g par dose pour augmenter la carnosine musculaire et différer la fatigue.",
+      scoreEfficacy: 88, scorePrice: 80,
+      breakdown: { dosage: 36, purity: 28, certif: 16, trace: 8 },
+      whyScore: [
+        "3 g par dose, dose efficace pour saturation carnosine après 4 semaines",
+        "CarnoSyn (seule beta-alanine brevetée Natural Alternatives Inc.)",
+        "Cologne List : zéro contamination anabolisante",
+        "Picotements normaux (paresthésie sans danger, signe d'absorption)"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Beta-alanine CarnoSyn', dose: '3 g' },
+          { name: 'Gélule HPMC', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'Beta-alanine', value: '3 g' },
+          { label: 'Source', value: 'CarnoSyn' },
+          { label: 'Pureté', value: '99 %' },
+          { label: 'Cure', value: '4-12 sem.' }
+        ]
+      },
+      reviews: [
+        { author: 'Yann C.', rating: 5, weeks: 8, verified: true, helpful: 13,
+          comment: "Effet net sur les efforts longs (CrossFit, sprints). Picotements 20 min après prise, parfaitement inoffensif." },
+        { author: 'Sarah F.', rating: 4, weeks: 6, verified: false, helpful: 6,
+          comment: "CarnoSyn fait la différence vs beta-alanine générique. Cher mais ça se ressent." }
+      ]
+    },
+    {
+      id: 'gnk', mark: 'GNK', brand: 'Solgar', name: 'Ginkgo Biloba 6000', category: 'targeted',
+      price: 24.50, pricePerDose: '0,41 € / dose', servings: 60, activeDose: '60 mg',
+      purity: 86, origin: 'États-Unis', certifications: ['Standardisé 24/6', 'GMP'], additives: ['Stéarate de magnésium'],
+      badges: [{ label: 'Targeted', tone: 'lime' }, { label: 'Cognition', tone: '' }],
+      description: "Extrait de Ginkgo Biloba standardisé 24 % flavonoïdes / 6 % terpénoïdes. 60 mg d'extrait (eq. 6000 mg de feuilles).",
+      scoreEfficacy: 83, scorePrice: 76,
+      breakdown: { dosage: 32, purity: 24, certif: 17, trace: 10 },
+      whyScore: [
+        "60 mg d'extrait standardisé (24/6), équivalent 6000 mg feuilles fraîches",
+        "Standardisation flavonoïdes/terpénoïdes garantie",
+        "Pénalité : stéarate de magnésium présent",
+        "GMP Solgar, marque historique 1947"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Extrait de Ginkgo Biloba standardisé', dose: '60 mg' },
+          { name: 'Cellulose microcristalline', dose: '180 mg' },
+          { name: 'Stéarate de magnésium', dose: '12 mg' }
+        ],
+        perDose: [
+          { label: 'Ginkgo extrait', value: '60 mg' },
+          { label: 'Flavonoïdes', value: '14 mg (24%)' },
+          { label: 'Terpénoïdes', value: '4 mg (6%)' },
+          { label: 'Equivalent feuilles', value: '6000 mg' }
+        ]
+      },
+      reviews: [
+        { author: 'Robert M.', rating: 4, weeks: 12, verified: true, helpful: 10,
+          comment: "Concentration améliorée à 6 semaines. Effet circulatoire jambes lourdes intéressant en plus." },
+        { author: 'Christine V.', rating: 4, weeks: 8, verified: false, helpful: 6,
+          comment: "Pris pour la mémoire après 60 ans. Effet subtil mais réel selon mon entourage." }
+      ]
+    },
+    {
+      id: 'lut', mark: 'LUT', brand: 'Now Foods', name: 'Lutéine 20 mg + Zéaxanthine', category: 'targeted',
+      price: 19.90, pricePerDose: '0,33 € / dose', servings: 60, activeDose: '20 mg',
+      purity: 90, origin: 'États-Unis', certifications: ['FloraGLO', 'GMP'], additives: [],
+      badges: [{ label: 'Targeted', tone: 'lime' }, { label: 'Vision', tone: '' }],
+      description: "Lutéine FloraGLO 20 mg + zéaxanthine 4 mg, pour la santé maculaire et la protection contre la lumière bleue.",
+      scoreEfficacy: 79, scorePrice: 82,
+      breakdown: { dosage: 30, purity: 27, certif: 14, trace: 8 },
+      whyScore: [
+        "20 mg de lutéine + 4 mg zéaxanthine, ratio 5:1 validé études AREDS2",
+        "Source FloraGLO (Kemin) : seule lutéine cliniquement étudiée à grande échelle",
+        "Pureté 90 % : huile de carthame comme excipient",
+        "Origine États-Unis (Kemin) traçable au lot"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Lutéine FloraGLO', dose: '20 mg' },
+          { name: 'Zéaxanthine', dose: '4 mg' },
+          { name: 'Huile de carthame', dose: '300 mg' }
+        ],
+        perDose: [
+          { label: 'Lutéine', value: '20 mg' },
+          { label: 'Zéaxanthine', value: '4 mg' },
+          { label: 'Ratio', value: '5:1' },
+          { label: 'Forme', value: 'Softgel' }
+        ]
+      },
+      reviews: [
+        { author: 'Henri F.', rating: 4, weeks: 24, verified: true, helpful: 8,
+          comment: "Cure préventive DMLA suite à antécédent familial. Bonne tolérance, pas d'effets secondaires." },
+        { author: 'Isabelle G.', rating: 4, weeks: 8, verified: false, helpful: 4,
+          comment: "Pris pour fatigue oculaire travail écran. Effet subtil mais constant." }
+      ]
+    },
+    {
+      id: 'can', mark: 'CAN', brand: 'Apyforme', name: 'Canneberge Bio 36 mg PAC', category: 'targeted',
+      price: 22.90, pricePerDose: '0,76 € / dose', servings: 30, activeDose: '36 mg PAC',
+      purity: 93, origin: 'France', certifications: ['AB', 'EU Organic', 'Made in France'], additives: [],
+      badges: [{ label: 'Targeted', tone: 'lime' }, { label: 'Urinaire', tone: '' }],
+      description: "Canneberge bio standardisée 36 mg de proanthocyanidines (PAC), dose validée EFSA pour le confort urinaire.",
+      scoreEfficacy: 86, scorePrice: 70,
+      breakdown: { dosage: 36, purity: 28, certif: 12, trace: 10 },
+      whyScore: [
+        "36 mg de PAC par dose, dose efficace prouvée pour prévention cystite",
+        "Standardisation PAC dosage HPLC (vs méthode BL-DMAC moins fiable)",
+        "AB + EU Organic + Made in France : triple traçabilité bio",
+        "Pénalité certifications : pas de Cosmos / Demeter à ce stade"
+      ],
+      composition: {
+        ingredients: [
+          { name: 'Extrait de canneberge bio standardisé', dose: '500 mg' },
+          { name: 'Gélule HPMC végétale', dose: 'qsp' }
+        ],
+        perDose: [
+          { label: 'PAC', value: '36 mg' },
+          { label: 'Canneberge', value: '500 mg' },
+          { label: 'Standardisation', value: 'HPLC' },
+          { label: 'Origine', value: 'France bio' }
+        ]
+      },
+      reviews: [
+        { author: 'Émilie R.', rating: 5, weeks: 16, verified: true, helpful: 18,
+          comment: "Cystites récidivantes finies depuis 4 mois de cure. La dose PAC fait toute la différence vs jus de canneberge classique." },
+        { author: 'Aline P.', rating: 5, weeks: 8, verified: false, helpful: 9,
+          comment: "Apyforme reste ma marque de confiance, qualité française constante." }
+      ]
     }
   ];
 
   function getProductById(id) {
     return PRODUCTS.find(function (p) { return p.id === id; }) || null;
   }
+
+  /* ---------- Phase 10 — Favoris (Supabase + localStorage fallback) ---------- */
+  function getFavorites() {
+    try {
+      const raw = localStorage.getItem('skynova_favorites');
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+  function isFavorite(id) {
+    return getFavorites().indexOf(id) !== -1;
+  }
+  async function toggleFavorite(id) {
+    const favs = getFavorites();
+    const i = favs.indexOf(id);
+    const becomesFav = (i === -1);
+    if (becomesFav) favs.push(id);
+    else favs.splice(i, 1);
+    localStorage.setItem('skynova_favorites', JSON.stringify(favs));
+
+    // If Supabase configured + session active, persist server-side too
+    if (supabase) {
+      try {
+        const uRes = await supabase.auth.getUser();
+        const user = uRes.data && uRes.data.user;
+        if (user) {
+          if (becomesFav) {
+            await supabase.from('favorites').insert({ user_id: user.id, product_id: id });
+          } else {
+            await supabase.from('favorites').delete().eq('user_id', user.id).eq('product_id', id);
+          }
+        }
+      } catch (e) { /* silent — local stays source of truth in demo */ }
+    }
+    return becomesFav;
+  }
+  window.skynova.favorites = { get: getFavorites, is: isFavorite, toggle: toggleFavorite };
 
   function getCategoryName(catId) {
     const c = CATEGORIES.find(function (x) { return x.id === catId; });
@@ -3046,10 +3688,23 @@
             el('span', { class: 'product-hero__servings mono' }, p.servings + ' doses')
           ]),
           el('div', { class: 'product-hero__actions' }, [
-            el('a', { href: '#', class: 'cta cta--primary product-hero__cta' }, [
-              el('i', { 'data-lucide': 'heart', class: 'cta__icon' }),
-              el('span', null, 'Ajouter aux favoris')
-            ]),
+            (function () {
+              const fav = isFavorite(p.id);
+              const btn = el('button', {
+                type: 'button',
+                class: 'cta cta--primary product-hero__cta fav-btn' + (fav ? ' is-favorited' : ''),
+                onclick: async function () {
+                  const now = await toggleFavorite(p.id);
+                  btn.classList.toggle('is-favorited', now);
+                  const lbl = btn.querySelector('.fav-btn__label');
+                  if (lbl) lbl.textContent = now ? '✓ Dans tes favoris' : 'Ajouter aux favoris';
+                }
+              }, [
+                el('i', { 'data-lucide': 'heart', class: 'cta__icon' }),
+                el('span', { class: 'fav-btn__label' }, fav ? '✓ Dans tes favoris' : 'Ajouter aux favoris')
+              ]);
+              return btn;
+            })(),
             el('a', { href: '#', class: 'cta cta--secondary' }, [
               el('i', { 'data-lucide': 'external-link', class: 'cta__icon' }),
               el('span', null, 'Voir le produit')
