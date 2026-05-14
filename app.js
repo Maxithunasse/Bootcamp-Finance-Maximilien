@@ -4033,7 +4033,8 @@
   };
   window.skynova.renderers = RENDERERS;
 
-  /* ---------- Routing ---------- */
+  /* ---------- Routing (Mission 7 : fade-out → swap → fade-in) ---------- */
+  let routeTransitionTimeout = null;
   function route() {
     const raw = (window.location.hash || '').replace(/^#/, '');
     const parts = raw.split('/').filter(Boolean);
@@ -4044,31 +4045,62 @@
     const app = document.getElementById('app');
     if (!app) return;
 
-    app.classList.remove('anim-fade-in');
-    void app.offsetWidth;
-    app.innerHTML = '';
-    app.appendChild(renderer(params));
-    app.classList.add('anim-fade-in');
-
-    setupCountUp(app);
-    initCounters(app);
-    initGauges(app);
-    initMagneticButtons(app);
-
     stopHeroCycle();
-    if (pageId === 'home') {
-      setTimeout(startHeroCycle, 0);
+
+    // Cancel any pending route swap (double-click protection)
+    if (routeTransitionTimeout) {
+      clearTimeout(routeTransitionTimeout);
+      routeTransitionTimeout = null;
     }
 
-    document.querySelectorAll('.site-nav__link, .mobile-drawer__link').forEach(a => {
-      const href = a.getAttribute('href') || '';
-      a.classList.toggle('is-active', href === '#' + pageId);
-    });
+    function finalize() {
+      setupCountUp(app);
+      initCounters(app);
+      initGauges(app);
+      initMagneticButtons(app);
 
-    closeDrawer();
-    window.scrollTo({ top: 0, behavior: 'instant' in window ? 'auto' : 'auto' });
+      if (pageId === 'home') setTimeout(startHeroCycle, 0);
 
-    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+      if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+
+      document.querySelectorAll('.site-nav__link, .mobile-drawer__link').forEach(function (a) {
+        const href = a.getAttribute('href') || '';
+        a.classList.toggle('is-active', href === '#' + pageId);
+      });
+
+      closeDrawer();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    const isFirstRender = app.children.length === 0;
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (isFirstRender || reduceMotion) {
+      // First load (or reduced-motion) : render directly, no fade-out
+      app.innerHTML = '';
+      app.appendChild(renderer(params));
+      app.style.opacity = '1';
+      app.style.transform = '';
+      finalize();
+      return;
+    }
+
+    // Subsequent renders : fade out → swap → fade in
+    app.style.transition = 'opacity 200ms ease-out, transform 200ms ease-out';
+    app.style.opacity = '0';
+    app.style.transform = 'translateY(8px)';
+
+    routeTransitionTimeout = setTimeout(function () {
+      routeTransitionTimeout = null;
+      app.innerHTML = '';
+      app.appendChild(renderer(params));
+
+      app.style.transition = 'opacity 280ms ease-out, transform 280ms ease-out';
+      app.style.opacity = '1';
+      app.style.transform = 'translateY(0)';
+
+      finalize();
+    }, 220);
   }
   window.skynova.route = route;
 
