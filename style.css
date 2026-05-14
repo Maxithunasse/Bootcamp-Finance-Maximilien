@@ -700,7 +700,15 @@ ul { list-style: none; }
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  transition: transform var(--t-base), border-color var(--t-base), box-shadow var(--t-base);
+  transition:
+    transform var(--t-base),
+    border-color var(--t-base),
+    box-shadow var(--t-base),
+    opacity 300ms ease-in-out;
+}
+.hero-card.is-cycling {
+  opacity: 0;
+  pointer-events: none;
 }
 .hero-card:hover {
   transform: translateY(-2px);

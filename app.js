@@ -190,37 +190,87 @@
     ]);
   }
 
-  function renderHeroMockup() {
-    return el('article', { class: 'hero-card', 'aria-label': 'Exemple de fiche produit decodee' }, [
+  /* ---------- Premium · Mission 5 — Hero mockup cycle ---------- */
+  const HERO_CYCLE_IDS = ['ash', 'whe', 'col', 'prb'];
+  let heroCycleIndex = 0;
+  let heroCycleInterval = null;
+
+  function buildHeroMockupChildren(productId, opts) {
+    opts = opts || {};
+    const delayBase = opts.delayBase != null ? opts.delayBase : 500;
+    const p = getProductById(productId);
+    if (!p) return [];
+
+    return [
       el('div', { class: 'hero-card__image' }, [
         el('div', { class: 'hero-card__image-top' }, [
-          el('span', { class: 'mono hero-card__image-tag' }, 'REF · SKY-001'),
-          el('span', { class: 'mono hero-card__image-tag' }, '03 · 05 · 26')
+          el('span', { class: 'mono hero-card__image-tag' }, 'REF · SKY-' + p.id.toUpperCase()),
+          el('span', { class: 'mono hero-card__image-tag' }, '14 · 05 · 26')
         ]),
-        el('div', { class: 'hero-card__mark', 'aria-hidden': 'true' }, 'ASH'),
+        el('div', { class: 'hero-card__mark', 'aria-hidden': 'true' }, p.mark),
         el('div', { class: 'hero-card__image-bottom' }, [
-          el('span', { class: 'mono hero-card__image-tag' }, '600 MG · KSM-66'),
-          el('span', { class: 'mono hero-card__image-tag' }, '60 GÉL')
+          el('span', { class: 'mono hero-card__image-tag' }, p.activeDose + ' / DOSE'),
+          el('span', { class: 'mono hero-card__image-tag' }, p.servings + ' DOSES')
         ])
       ]),
       el('div', { class: 'hero-card__body' }, [
-        el('span', { class: 'overline hero-card__brand' }, '· Nutripure ·'),
-        el('h3', { class: 'hero-card__name' }, 'Ashwagandha KSM-66'),
-        el('div', { class: 'hero-card__pills' }, [
-          el('span', { class: 'pill pill--mercury' }, 'Sommeil'),
-          el('span', { class: 'pill' }, 'Stress')
-        ]),
+        el('span', { class: 'overline hero-card__brand' }, '· ' + p.brand + ' ·'),
+        el('h3', { class: 'hero-card__name' }, p.name),
+        el('div', { class: 'hero-card__pills' },
+          p.badges.map(function (b) {
+            return el('span', { class: 'pill' + (b.tone ? ' pill--' + b.tone : '') }, b.label);
+          })
+        ),
         el('div', { class: 'hero-card__price-row' }, [
-          el('span', { class: 'hero-card__price' }, '29,90 €'),
-          el('span', { class: 'hero-card__servings' }, '0,49 € / dose')
+          el('span', { class: 'hero-card__price' }, p.price.toFixed(2).replace('.', ',') + ' €'),
+          el('span', { class: 'hero-card__servings' }, p.pricePerDose)
         ]),
         el('div', { class: 'hero-card__gauges' }, [
-          gaugeBlock('Efficacité', 89, 'lime',    500),
-          gaugeBlock('Prix',        71, 'mercury', 650)
+          gaugeBlock('Efficacité', p.scoreEfficacy, 'lime',    delayBase),
+          gaugeBlock('Prix',       p.scorePrice,    'mercury', delayBase + 150)
         ])
       ])
-    ]);
+    ];
   }
+
+  function renderHeroMockup() {
+    heroCycleIndex = 0;
+    return el(
+      'article',
+      { class: 'hero-card', 'aria-label': 'Exemple de fiche produit décodée' },
+      buildHeroMockupChildren(HERO_CYCLE_IDS[0], { delayBase: 500 })
+    );
+  }
+
+  function cycleHeroMockup() {
+    const card = document.querySelector('.hero-card');
+    if (!card) { stopHeroCycle(); return; }
+    heroCycleIndex = (heroCycleIndex + 1) % HERO_CYCLE_IDS.length;
+    const nextId = HERO_CYCLE_IDS[heroCycleIndex];
+
+    card.classList.add('is-cycling');
+    setTimeout(function () {
+      card.innerHTML = '';
+      const children = buildHeroMockupChildren(nextId, { delayBase: 100 });
+      children.forEach(function (c) { card.appendChild(c); });
+      card.classList.remove('is-cycling');
+      initGauges(card);
+    }, 300);
+  }
+
+  function startHeroCycle() {
+    stopHeroCycle();
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    heroCycleInterval = setInterval(cycleHeroMockup, 6000);
+  }
+
+  function stopHeroCycle() {
+    if (heroCycleInterval) {
+      clearInterval(heroCycleInterval);
+      heroCycleInterval = null;
+    }
+  }
+  window.skynova.heroCycle = { start: startHeroCycle, stop: stopHeroCycle };
 
   function heroSection() {
     return el('section', { class: 'hero' }, [
@@ -4003,6 +4053,11 @@
     setupCountUp(app);
     initCounters(app);
     initGauges(app);
+
+    stopHeroCycle();
+    if (pageId === 'home') {
+      setTimeout(startHeroCycle, 0);
+    }
 
     document.querySelectorAll('.site-nav__link, .mobile-drawer__link').forEach(a => {
       const href = a.getAttribute('href') || '';
