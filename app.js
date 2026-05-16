@@ -191,22 +191,33 @@
   }
 
   /* ---------- Premium · Mission 5 — Hero mockup cycle ---------- */
-  const HERO_CYCLE_IDS = ['ash', 'whe', 'col', 'prb'];
+  // Sélection par catégorie (data-source agnostic : marche avec JS fallback ET Supabase)
+  const HERO_CYCLE_CATEGORIES = ['sleep', 'sport', 'beauty', 'digestion'];
   let heroCycleIndex = 0;
   let heroCycleInterval = null;
 
-  function buildHeroMockupChildren(productId, opts) {
+  function getHeroCycleProducts() {
+    const list = [];
+    HERO_CYCLE_CATEGORIES.forEach(function (cat) {
+      const inCat = PRODUCTS.filter(function (p) { return p.category === cat; })
+        .sort(function (a, b) { return b.scoreEfficacy - a.scoreEfficacy; });
+      if (inCat[0]) list.push(inCat[0]);
+    });
+    if (list.length === 0 && PRODUCTS.length) list.push(PRODUCTS[0]);
+    return list;
+  }
+
+  function buildHeroMockupChildren(p, opts) {
     opts = opts || {};
     const delayBase = opts.delayBase != null ? opts.delayBase : 500;
-    const p = getProductById(productId);
     if (!p) return [];
 
     return [
       el('div', { class: 'hero-card__image' }, [
         productImg(p),
         el('div', { class: 'hero-card__image-top' }, [
-          el('span', { class: 'mono hero-card__image-tag' }, 'REF · SKY-' + p.id.toUpperCase()),
-          el('span', { class: 'mono hero-card__image-tag' }, '14 · 05 · 26')
+          el('span', { class: 'mono hero-card__image-tag' }, 'REF · SKY-' + String(p.mark || p.id).toUpperCase()),
+          el('span', { class: 'mono hero-card__image-tag' }, '16 · 05 · 26')
         ]),
         el('div', { class: 'hero-card__image-bottom' }, [
           el('span', { class: 'mono hero-card__image-tag' }, p.activeDose + ' / DOSE'),
@@ -235,23 +246,26 @@
 
   function renderHeroMockup() {
     heroCycleIndex = 0;
+    const products = getHeroCycleProducts();
     return el(
       'article',
       { class: 'hero-card', 'aria-label': 'Exemple de fiche produit décodée' },
-      buildHeroMockupChildren(HERO_CYCLE_IDS[0], { delayBase: 500 })
+      buildHeroMockupChildren(products[0], { delayBase: 500 })
     );
   }
 
   function cycleHeroMockup() {
     const card = document.querySelector('.hero-card');
     if (!card) { stopHeroCycle(); return; }
-    heroCycleIndex = (heroCycleIndex + 1) % HERO_CYCLE_IDS.length;
-    const nextId = HERO_CYCLE_IDS[heroCycleIndex];
+    const products = getHeroCycleProducts();
+    if (!products.length) return;
+    heroCycleIndex = (heroCycleIndex + 1) % products.length;
+    const next = products[heroCycleIndex];
 
     card.classList.add('is-cycling');
     setTimeout(function () {
       card.innerHTML = '';
-      const children = buildHeroMockupChildren(nextId, { delayBase: 100 });
+      const children = buildHeroMockupChildren(next, { delayBase: 100 });
       children.forEach(function (c) { card.appendChild(c); });
       card.classList.remove('is-cycling');
       initGauges(card);
@@ -2358,7 +2372,7 @@
      ========================================================= */
 
   /* ---------- Dataset produits (12 produits seedés client-side) ---------- */
-  const PRODUCTS = [
+  const PRODUCTS_FALLBACK = [
     {
       id: 'whe', mark: 'WHE', brand: 'Nutripure', name: 'Whey Native Isolat', category: 'sport',
       price: 39.90, pricePerDose: '1,11 € / dose', servings: 36, activeDose: '25 g',
@@ -3407,8 +3421,174 @@
     }
   ];
 
+  /* ---------- Catalogue : Supabase d'abord, fallback array JS ---------- */
+  // PRODUCTS est mutable : rempli depuis Supabase au boot, sinon = fallback JS.
+  let PRODUCTS = PRODUCTS_FALLBACK;
+
+  function stripAccents(s) {
+    return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  function deriveMark(name) {
+    const clean = stripAccents(name).toUpperCase().replace(/[^A-Z ]/g, '');
+    const letters = clean.replace(/ /g, '');
+    return letters.slice(0, 3) || 'SKY';
+  }
+
+  function deriveId(row) {
+    // id stable et lisible : mark en minuscule (ex: 'whe'), unique via suffixe ean si collision gérée à l'usage
+    return deriveMark(row.name).toLowerCase();
+  }
+
+  function formatActiveDose(mg) {
+    const n = Number(mg);
+    if (!isFinite(n) || n <= 0) return '—';
+    if (n >= 1000000000) return (n / 1000000000) + ' Mrd UFC';
+    if (n >= 1000000)    return (n / 1000000) + ' M UFC';
+    if (n >= 1000)       return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1).replace('.', ',') + ' g';
+    if (n < 1)           return String(n).replace('.', ',') + ' mg';
+    return n + ' mg';
+  }
+
+  function frPrice(n) {
+    return Number(n).toFixed(2).replace('.', ',') + ' €';
+  }
+
+  function mapDbProductToClient(row, reviewRows) {
+    const tone = getTone(row.quality_score);
+    const bd = row.quality_breakdown || { dosage: 0, purity: 0, certif: 0, trace: 0 };
+    const certs = row.certifications || [];
+    const adds = row.controversial_additives || [];
+    const activeDose = formatActiveDose(row.active_ingredient_mg_per_serving);
+    const servings = row.servings_per_container || 1;
+    const perDoseEur = (row.price_eur && servings) ? (row.price_eur / servings) : 0;
+    const catName = getCategoryName(row.category_id);
+
+    // whyScore généré factuellement depuis les vraies données DB
+    const whyScore = [
+      'Dosage : ' + bd.dosage + '/40 — ' + activeDose + ' de principe actif par dose',
+      'Pureté : ' + bd.purity + '/30 — ' + row.active_ingredient_purity_pct + ' % de pureté' +
+        (adds.length ? ', additifs détectés : ' + adds.join(', ') : ', sans additif controversé'),
+      'Certifications : ' + bd.certif + '/20 — ' +
+        (certs.length ? certs.join(', ') : 'aucune certification déclarée'),
+      'Traçabilité : ' + bd.trace + '/10 — origine ' + (row.origin_country || 'non précisée')
+    ];
+
+    // composition : ingredients depuis le texte ingredients_list + perDose dérivé
+    const ingredients = (row.ingredients_list || '')
+      .split(',')
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean)
+      .map(function (nm) { return { name: nm, dose: '·' }; });
+
+    const perDose = [
+      { label: 'Principe actif', value: activeDose },
+      { label: 'Pureté',         value: (row.active_ingredient_purity_pct || 0) + ' %' },
+      { label: 'Par boîte',      value: servings + ' doses' },
+      { label: 'Origine',        value: row.origin_country || '—' },
+      { label: 'Note communauté', value: (row.community_rating || 0) + ' / 5' },
+      { label: 'Avis',           value: String(row.community_review_count || 0) }
+    ];
+
+    const reviews = (reviewRows || []).map(function (r) {
+      return {
+        author: r.author_name || 'Anonyme',
+        rating: r.rating || 5,
+        weeks: r.cure_duration_weeks || 0,
+        verified: !!r.verified_purchase,
+        helpful: r.helpful_count || 0,
+        comment: r.comment || ''
+      };
+    });
+
+    return {
+      id: deriveId(row),
+      _uuid: row.id,
+      ean: row.ean,
+      mark: deriveMark(row.name),
+      brand: row.brand,
+      name: row.name,
+      category: row.category_id,
+      price: Number(row.price_eur) || 0,
+      pricePerDose: perDoseEur ? (perDoseEur.toFixed(2).replace('.', ',') + ' € / dose') : '—',
+      servings: servings,
+      activeDose: activeDose,
+      purity: row.active_ingredient_purity_pct || 0,
+      origin: row.origin_country || '—',
+      certifications: certs,
+      additives: adds,
+      badges: [
+        { label: catName.split(' ')[0], tone: tone === 'lime' ? 'lime' : '' },
+        { label: row.community_rating >= 4.5 ? 'Plébiscité' : 'Vérifié', tone: '' }
+      ],
+      description: row.description || '',
+      scoreEfficacy: row.quality_score || 0,
+      scorePrice: row.price_score || 0,
+      breakdown: {
+        dosage: bd.dosage || 0,
+        purity: bd.purity || 0,
+        certif: bd.certif || 0,
+        trace: bd.trace || 0
+      },
+      whyScore: whyScore,
+      composition: {
+        ingredients: ingredients.length ? ingredients : [{ name: 'Composition non communiquée', dose: '·' }],
+        perDose: perDose
+      },
+      reviews: reviews.length ? reviews : [{
+        author: 'Skynova Lab', rating: Math.round(row.community_rating || 4), weeks: 0,
+        verified: true, helpful: 0,
+        comment: 'Note communauté ' + (row.community_rating || 0) + '/5 sur ' +
+                 (row.community_review_count || 0) + ' avis vérifiés.'
+      }]
+    };
+  }
+
+  async function loadCatalog() {
+    if (!supabase) {
+      console.info('[skynova] Supabase non configuré — catalogue JS local (30 produits).');
+      return;
+    }
+    try {
+      const timeout = new Promise(function (_, rej) {
+        setTimeout(function () { rej(new Error('supabase-timeout')); }, 5000);
+      });
+
+      const prodRes = await Promise.race([
+        supabase.from('products').select('*').order('quality_score', { ascending: false }),
+        timeout
+      ]);
+
+      if (prodRes.error || !prodRes.data || prodRes.data.length === 0) {
+        console.info('[skynova] Table products vide ou inaccessible — fallback JS local.',
+          prodRes.error ? prodRes.error.message : '');
+        return;
+      }
+
+      let reviewsByProduct = {};
+      try {
+        const revRes = await supabase.from('reviews').select('*');
+        if (revRes.data) {
+          revRes.data.forEach(function (r) {
+            (reviewsByProduct[r.product_id] = reviewsByProduct[r.product_id] || []).push(r);
+          });
+        }
+      } catch (e) { /* reviews optionnels */ }
+
+      PRODUCTS = prodRes.data.map(function (row) {
+        return mapDbProductToClient(row, reviewsByProduct[row.id] || []);
+      });
+      console.info('[skynova] Catalogue chargé depuis Supabase : ' + PRODUCTS.length + ' produits.');
+    } catch (e) {
+      console.info('[skynova] Supabase indisponible (' + e.message + ') — fallback JS local.');
+    }
+  }
+  window.skynova.loadCatalog = loadCatalog;
+
   function getProductById(id) {
-    return PRODUCTS.find(function (p) { return p.id === id; }) || null;
+    return PRODUCTS.find(function (p) { return p.id === id; }) ||
+           PRODUCTS.find(function (p) { return p._uuid === id || p.ean === id; }) ||
+           null;
   }
 
   /* ---------- Product images — 20 distinct Unsplash URLs ---------- */
@@ -4757,12 +4937,13 @@
   }
 
   /* ---------- Boot ---------- */
-  function boot() {
+  async function boot() {
     setupHeaderScroll();
     setupBurger();
     setupScrollProgress();
     initMagneticButtons(document);
     initCustomCursor();
+    await loadCatalog();   // charge le catalogue Supabase (ou fallback JS) avant le 1er render
     route();
   }
   if (document.readyState === 'loading') {
